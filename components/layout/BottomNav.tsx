@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Map, Plus, Scale, User } from "lucide-react";
+import { AddExpenseChoiceSheet } from "@/features/expenses/AddExpenseChoiceSheet";
 import { cn } from "@/lib/utils";
-import { useActiveTrip } from "@/store";
+import { useActiveTrip, useOpenBottomSheet } from "@/store";
 
 const tabs = [
   { href: "/dashboard", label: "Trips", icon: Map },
@@ -16,11 +17,9 @@ const tabs = [
 export function BottomNav() {
   const pathname = usePathname();
   const activeTrip = useActiveTrip();
+  const openBottomSheet = useOpenBottomSheet();
 
-  const addHref =
-    activeTrip && pathname.startsWith("/trips/")
-      ? `/trips/${activeTrip.id}/expenses/new`
-      : "/add";
+  const onTripContext = Boolean(activeTrip && pathname.startsWith("/trips/"));
 
   return (
     <nav
@@ -39,15 +38,36 @@ export function BottomNav() {
               : pathname.startsWith(tab.href);
 
           if ("isFab" in tab && tab.isFab) {
+            const fabClasses = cn(
+              "relative -mt-6 flex h-14 w-14 items-center justify-center",
+              "rounded-pill bg-accent-gradient shadow-glow",
+              "transition-transform duration-fast ease-tally active:scale-95"
+            );
+
+            if (onTripContext && activeTrip) {
+              return (
+                <button
+                  key={tab.href}
+                  type="button"
+                  onClick={() =>
+                    openBottomSheet(
+                      <AddExpenseChoiceSheet tripId={activeTrip.id} />,
+                      { height: "40" }
+                    )
+                  }
+                  className={fabClasses}
+                  aria-label="Add expense"
+                >
+                  <tab.icon className="h-6 w-6 text-white" strokeWidth={2.5} />
+                </button>
+              );
+            }
+
             return (
               <Link
                 key={tab.href}
-                href={addHref}
-                className={cn(
-                  "relative -mt-6 flex h-14 w-14 items-center justify-center",
-                  "rounded-pill bg-accent-gradient shadow-glow",
-                  "transition-transform duration-fast ease-tally active:scale-95"
-                )}
+                href="/add"
+                className={fabClasses}
                 aria-label="Add expense"
               >
                 <tab.icon className="h-6 w-6 text-white" strokeWidth={2.5} />

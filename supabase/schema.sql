@@ -136,6 +136,7 @@ create table if not exists public.expenses (
   split_method           text not null check (split_method in ('equal', 'custom')),
   split_map              jsonb not null default '[]'::jsonb,
   ocr_source             boolean not null default false,
+  receipt_image_url      text,
   created_at             timestamptz not null default now()
 );
 

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { AddExpenseInput, Expense } from "@/types";
+import type { AddExpenseInput, Expense, ExpenseCategory } from "@/types";
 import {
   buildExpenseRecord,
   fetchExpenseById,
@@ -10,10 +10,21 @@ import { generateId } from "@/lib/utils";
 import { useBalanceStore } from "@/store/balanceStore";
 import { useUIStore } from "@/store/uiStore";
 
+/** Data handed from the receipt-scan flow to the Add Expense form. */
+export interface ScanPrefill {
+  totalAmount: number | null;
+  currency: string | null;
+  category: ExpenseCategory | null;
+  merchantName: string | null;
+  receiptImageUrl: string | null;
+  failed: boolean;
+}
+
 interface ExpenseState {
   expensesByTrip: Record<string, Expense[]>;
   isLoading: boolean;
   isAddingExpense: boolean;
+  prefill: ScanPrefill | null;
   setExpensesForTrip: (tripId: string, expenses: Expense[]) => void;
   fetchExpenses: (tripId: string) => Promise<void>;
   getExpense: (tripId: string, expenseId: string) => Promise<Expense | null>;
@@ -22,6 +33,8 @@ interface ExpenseState {
     data: AddExpenseInput,
     options: { baseCurrency: string; createdBy: string }
   ) => Expense;
+  setPrefillData: (prefill: ScanPrefill) => void;
+  clearPrefill: () => void;
   removeExpenseFromTrip: (tripId: string, expenseId: string) => void;
   clearExpenses: () => void;
 }
@@ -36,6 +49,10 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
   expensesByTrip: {},
   isLoading: false,
   isAddingExpense: false,
+  prefill: null,
+
+  setPrefillData: (prefill) => set({ prefill }),
+  clearPrefill: () => set({ prefill: null }),
 
   setExpensesForTrip: (tripId, expenses) =>
     set((state) => ({
@@ -162,7 +179,12 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
     })),
 
   clearExpenses: () =>
-    set({ expensesByTrip: {}, isLoading: false, isAddingExpense: false }),
+    set({
+      expensesByTrip: {},
+      isLoading: false,
+      isAddingExpense: false,
+      prefill: null,
+    }),
 }));
 
 export const useExpensesForTrip = (tripId: string) =>

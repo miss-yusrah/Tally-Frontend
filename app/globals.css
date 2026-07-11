@@ -420,6 +420,33 @@
   overflow: hidden;
 }
 
+/* AI receipt scan — processing state */
+@keyframes scan-sweep {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(68px);
+  }
+}
+
+.animate-scan-sweep {
+  animation: scan-sweep 1200ms ease-in-out infinite alternate;
+}
+
+@keyframes fade-swap {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-swap {
+  animation: fade-swap 150ms var(--ease-tally) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-invite-icon-pop,
   .animate-invite-copy-flash,

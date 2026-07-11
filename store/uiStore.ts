@@ -14,7 +14,7 @@ interface BottomSheetState {
   isOpen: boolean;
   content: ReactNode | null;
   title?: string;
-  height: "60" | "75";
+  height: "40" | "60" | "75";
 }
 
 interface UIState {
@@ -22,7 +22,7 @@ interface UIState {
   toasts: ToastItem[];
   openBottomSheet: (
     content: ReactNode,
-    options?: { title?: string; height?: "60" | "75" }
+    options?: { title?: string; height?: "40" | "60" | "75" }
   ) => void;
   closeBottomSheet: () => void;
   addToast: (toast: Omit<ToastItem, "id">) => void;

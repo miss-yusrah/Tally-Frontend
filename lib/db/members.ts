@@ -172,7 +172,7 @@ async function insertMemberDynamo(member: TripMember): Promise<void> {
   );
 }
 
-function useSupabase(): boolean {
+function shouldUseSupabase(): boolean {
   return isSupabaseConfigured();
 }
 
@@ -180,7 +180,7 @@ function useSupabase(): boolean {
 export async function fetchMembersForTrip(
   tripId: string
 ): Promise<TripMember[]> {
-  if (useSupabase()) return fetchMembersSupabase(tripId);
+  if (shouldUseSupabase()) return fetchMembersSupabase(tripId);
   if (!isDynamoConfigured()) return memoryFetchMembers(tripId);
   try {
     return await fetchMembersDynamo(tripId);
@@ -194,7 +194,7 @@ export async function getTripMember(
   tripId: string,
   userId: string
 ): Promise<TripMember | null> {
-  if (useSupabase()) return getMemberSupabase(tripId, userId);
+  if (shouldUseSupabase()) return getMemberSupabase(tripId, userId);
   if (!isDynamoConfigured()) return memoryGetMember(tripId, userId);
   try {
     return await getMemberDynamo(tripId, userId);
@@ -205,7 +205,7 @@ export async function getTripMember(
 
 /** Insert a member row. Caller must check for duplicates first. */
 export async function insertTripMember(member: TripMember): Promise<void> {
-  if (useSupabase()) {
+  if (shouldUseSupabase()) {
     await insertMemberSupabase(member);
     return;
   }

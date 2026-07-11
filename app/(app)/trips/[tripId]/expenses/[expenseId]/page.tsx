@@ -141,11 +141,13 @@ export default function ExpenseDetailPage({ params }: ExpenseDetailPageProps) {
   const splitRows = useMemo(() => {
     if (!expense) return [];
     const total = expense.amountMinorUnits || 1;
+    const nameFor = (userId: string) =>
+      members.find((m) => m.userId === userId)?.displayName ?? "Member";
     return [...expense.splitMap]
       .sort((a, b) => b.amountMinorUnits - a.amountMinorUnits)
       .map((split) => ({
         ...split,
-        name: memberName(split.userId),
+        name: nameFor(split.userId),
         share: Math.round((split.amountMinorUnits / total) * 100),
       }));
   }, [expense, members]);

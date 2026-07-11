@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
@@ -18,6 +18,7 @@ import {
 import { splitEquallyMinorUnits } from "@/features/expenses/splitMath";
 import { isCustomSplitExact } from "@/features/expenses/splitMath";
 import {
+  getCurrencyPrecision,
   getDecimalPlacesError,
   hasValidDecimalPlaces,
   parseAmountToMinorUnits,
@@ -54,7 +55,19 @@ export default function NewExpensePage({ params }: NewExpensePageProps) {
       ? activeTrip
       : trips.find((t) => t.id === params.tripId) ?? null;
 
-  const [currency, setCurrency] = useState(trip?.baseCurrency ?? "NGN");
+  // Peek scan prefill during render (idempotent); cleared in an effect below.
+  const [prefill] = useState(() => useExpenseStore.getState().prefill);
+  const hasScanData = Boolean(
+    prefill && !prefill.failed && prefill.totalAmount && prefill.totalAmount > 0
+  );
+
+  const [currency, setCurrency] = useState(
+    prefill?.currency ?? trip?.baseCurrency ?? "NGN"
+  );
+  // OCR-detected currency (or a manual pick) must not be overridden by
+  // the trip base currency arriving later.
+  const currencyLockedRef = useRef(Boolean(prefill?.currency));
+
   const [amountStr, setAmountStr] = useState("");
   const [payerId, setPayerId] = useState(user?.id ?? "");
   const [splitMode, setSplitMode] = useState<SplitMode>("equal");
@@ -66,8 +79,27 @@ export default function NewExpensePage({ params }: NewExpensePageProps) {
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const [showScanBanner, setShowScanBanner] = useState(
+    Boolean(prefill?.failed)
+  );
+  const [receiptImageUrl, setReceiptImageUrl] = useState<string | null>(
+    prefill?.receiptImageUrl ?? null
+  );
+  // Failure path shows the attached photo immediately; success path fades it
+  // in at the end of the entrance sequence.
+  const [thumbVisible, setThumbVisible] = useState(
+    Boolean(prefill?.receiptImageUrl && !hasScanData)
+  );
+  const [viewerOpen, setViewerOpen] = useState(false);
+
   useEffect(() => {
-    if (trip?.baseCurrency) setCurrency(trip.baseCurrency);
+    if (prefill) useExpenseStore.getState().clearPrefill();
+  }, [prefill]);
+
+  useEffect(() => {
+    if (trip?.baseCurrency && !currencyLockedRef.current) {
+      setCurrency(trip.baseCurrency);
+    }
   }, [trip?.baseCurrency]);
 
   useEffect(() => {
@@ -77,6 +109,65 @@ export default function NewExpensePage({ params }: NewExpensePageProps) {
     );
     if (user?.id) setPayerId((prev) => prev || user.id);
   }, [members, user?.id]);
+
+  // Staggered "magic moment" entrance when scan data is present (~500ms).
+  useEffect(() => {
+    if (!hasScanData || !prefill?.totalAmount) return;
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const intervals: ReturnType<typeof setInterval>[] = [];
+    let raf = 0;
+
+    const finalAmount = prefill.totalAmount;
+    const precision = getCurrencyPrecision(prefill.currency ?? currency);
+
+    // t=50ms — amount counts up over 300ms
+    timers.push(
+      setTimeout(() => {
+        const start = performance.now();
+        const step = (now: number) => {
+          const t = Math.min((now - start) / 300, 1);
+          const eased = 1 - Math.pow(1 - t, 3);
+          setAmountStr((finalAmount * eased).toFixed(precision));
+          if (t < 1) raf = requestAnimationFrame(step);
+        };
+        raf = requestAnimationFrame(step);
+      }, 50)
+    );
+
+    // t=250ms — category chip selects via its existing selection style
+    if (prefill.category) {
+      const cat = prefill.category;
+      timers.push(setTimeout(() => setCategory(cat), 250));
+    }
+
+    // t=400ms — merchant name typewriters into the note field (~150ms)
+    if (prefill.merchantName) {
+      const merchant = prefill.merchantName;
+      timers.push(
+        setTimeout(() => {
+          const perChar = Math.max(150 / merchant.length, 10);
+          let i = 0;
+          const interval = setInterval(() => {
+            i += 1;
+            setNote(merchant.slice(0, i));
+            if (i >= merchant.length) clearInterval(interval);
+          }, perChar);
+          intervals.push(interval);
+        }, 400)
+      );
+    }
+
+    // t=500ms — receipt thumbnail fades in
+    timers.push(setTimeout(() => setThumbVisible(true), 500));
+
+    return () => {
+      timers.forEach(clearTimeout);
+      intervals.forEach(clearInterval);
+      cancelAnimationFrame(raf);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const totalMinor = useMemo(
     () => parseAmountToMinorUnits(amountStr, currency),
@@ -110,6 +201,7 @@ export default function NewExpensePage({ params }: NewExpensePageProps) {
       <CurrencyPickerSheet
         selectedCode={currency}
         onSelect={(c) => {
+          currencyLockedRef.current = true;
           setCurrency(c.code);
           if (!hasValidDecimalPlaces(amountStr, c.code)) {
             setAmountStr(amountStr.split(".")[0] ?? "");
@@ -152,6 +244,7 @@ export default function NewExpensePage({ params }: NewExpensePageProps) {
           splitMap,
           category,
           note: note.trim() || undefined,
+          receiptImageUrl: receiptImageUrl ?? undefined,
         },
         { baseCurrency: trip.baseCurrency, createdBy: user.id }
       );
@@ -190,6 +283,23 @@ export default function NewExpensePage({ params }: NewExpensePageProps) {
       </header>
 
       <div className="flex-1 overflow-y-auto pb-[120px]">
+        {/* Scan-failed banner — pushes content down, doesn't overlay */}
+        {showScanBanner && (
+          <div className="flex h-11 w-full items-center gap-2 bg-[#F43F5E1a] px-6">
+            <p className="flex-1 text-[13px] font-medium text-[#F43F5E]">
+              Couldn&apos;t read that receipt — enter the details manually.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowScanBanner(false)}
+              aria-label="Dismiss"
+              className={cn("shrink-0 rounded-full p-1", focusRing)}
+            >
+              <X className="h-4 w-4 text-[#F43F5E]" strokeWidth={2} />
+            </button>
+          </div>
+        )}
+
         <div className="px-6 pt-4">
           <AmountHeroInput
             currency={currency}
@@ -234,6 +344,53 @@ export default function NewExpensePage({ params }: NewExpensePageProps) {
                 focusRing
               )}
             />
+
+            {receiptImageUrl && (
+              <div
+                className={cn(
+                  "mt-3 flex items-center gap-3",
+                  "transition-opacity duration-default ease-tally",
+                  thumbVisible ? "opacity-100" : "opacity-0"
+                )}
+              >
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setViewerOpen(true)}
+                    aria-label="View receipt"
+                    className={cn(
+                      "block h-10 w-10 overflow-hidden rounded-[8px] border border-[#ffffff0f]",
+                      focusRing
+                    )}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={receiptImageUrl}
+                      alt="Receipt"
+                      className="h-full w-full object-cover"
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReceiptImageUrl(null);
+                      setThumbVisible(false);
+                    }}
+                    aria-label="Remove receipt"
+                    className={cn(
+                      "absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center",
+                      "rounded-full border border-[#ffffff0f] bg-[#1C1C27]",
+                      focusRing
+                    )}
+                  >
+                    <X className="h-2.5 w-2.5 text-[#94A3B8]" strokeWidth={2.5} />
+                  </button>
+                </div>
+                <span className="text-[12px] font-medium text-[#94A3B8]">
+                  Receipt attached
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -261,6 +418,36 @@ export default function NewExpensePage({ params }: NewExpensePageProps) {
           )}
         </button>
       </div>
+
+      {/* Full-size receipt viewer */}
+      {viewerOpen && receiptImageUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-6"
+          onClick={() => setViewerOpen(false)}
+          role="dialog"
+          aria-modal
+          aria-label="Receipt photo"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={receiptImageUrl}
+            alt="Receipt"
+            className="max-h-full max-w-full rounded-[12px]"
+          />
+          <button
+            type="button"
+            onClick={() => setViewerOpen(false)}
+            aria-label="Close"
+            className={cn(
+              "absolute right-5 top-5 flex h-10 w-10 items-center justify-center",
+              "rounded-full bg-[#1C1C27] text-[#F8F8FF]",
+              focusRing
+            )}
+          >
+            <X className="h-5 w-5" strokeWidth={2} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

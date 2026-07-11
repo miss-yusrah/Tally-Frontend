@@ -1,3 +1,4 @@
+export { AddExpenseChoiceSheet } from "./AddExpenseChoiceSheet";
 export { AmountHeroInput } from "./AmountHeroInput";
 export { CategoryChips } from "./CategoryChips";
 export { ExpenseRow } from "./ExpenseRow";

@@ -65,6 +65,7 @@ export interface Expense {
   splitMethod: "equal" | "custom";
   splitMap: ExpenseSplit[];
   ocrSource: boolean;
+  receiptImageUrl?: string;
   createdAt: string;
   /** Optimistic entries pending server confirmation */
   _optimistic?: boolean;
@@ -78,6 +79,7 @@ export interface AddExpenseInput {
   splitMap: ExpenseSplit[];
   category: ExpenseCategory | null;
   note?: string;
+  receiptImageUrl?: string;
 }
 
 export interface Settlement {

@@ -20,6 +20,7 @@ create table if not exists public.expenses (
   -- Denormalized split array: [{ "userId": "...", "amountMinorUnits": 123 }]
   split_map              jsonb not null default '[]'::jsonb,
   ocr_source             boolean not null default false,
+  receipt_image_url      text,
   created_at             timestamptz not null default now()
 );
 

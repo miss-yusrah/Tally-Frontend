@@ -18,6 +18,7 @@ interface ExpenseRow {
   split_method: "equal" | "custom";
   split_map: ExpenseSplit[] | null;
   ocr_source: boolean;
+  receipt_image_url: string | null;
   created_at: string;
 }
 
@@ -40,6 +41,7 @@ function mapExpenseRow(row: ExpenseRow): Expense {
     splitMethod: row.split_method,
     splitMap: Array.isArray(row.split_map) ? row.split_map : [],
     ocrSource: row.ocr_source,
+    receiptImageUrl: row.receipt_image_url ?? undefined,
     createdAt: row.created_at,
   };
 }
@@ -74,6 +76,7 @@ export function buildExpenseRecord(params: {
   splitMap: ExpenseSplit[];
   category: Expense["category"];
   note?: string;
+  receiptImageUrl?: string;
   createdBy: string;
   id?: string;
 }): Expense {
@@ -96,7 +99,8 @@ export function buildExpenseRecord(params: {
     note: params.note,
     splitMethod: params.splitMethod,
     splitMap: params.splitMap,
-    ocrSource: false,
+    ocrSource: Boolean(params.receiptImageUrl),
+    receiptImageUrl: params.receiptImageUrl,
     createdAt: now,
   };
 }
@@ -122,6 +126,7 @@ export async function persistExpense(expense: Expense): Promise<Expense> {
       split_method: expense.splitMethod,
       split_map: expense.splitMap,
       ocr_source: expense.ocrSource,
+      receipt_image_url: expense.receiptImageUrl ?? null,
       created_at: expense.createdAt,
     })
     .select("*")
