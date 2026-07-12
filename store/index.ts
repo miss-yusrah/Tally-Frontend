@@ -30,6 +30,10 @@ export {
 
 export {
   useBalanceStore,
+  useTripBalances,
+  useTripSimplifiedDebts,
+  useTripMemberBalances,
+  useBalancesCalculating,
   useBalances,
   useSimplifiedPayments,
   useSettlements,

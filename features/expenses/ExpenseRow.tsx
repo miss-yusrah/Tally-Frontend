@@ -81,8 +81,8 @@ export function ExpenseRow({
   isEntering = false,
   showDivider = true,
 }: ExpenseRowProps) {
-  const description =
-    expense.note?.trim() || `${payerName.split(" ")[0]} paid`;
+  const title = expense.note?.trim() || expense.merchant?.trim() || "Expense";
+  const payerLabel = payerName.split(" ")[0] || payerName;
   const showBaseConversion = expense.currency !== baseCurrency;
   const usedCachedRate = expense.rateSource === "cached";
 
@@ -105,13 +105,13 @@ export function ExpenseRow({
 
         <div className="min-w-0 flex-1">
           <p className="truncate text-[15px] font-medium text-[#F8F8FF]">
-            {description}
+            {title}
           </p>
           <p
             className="mt-0.5 text-[13px] font-normal text-[#94A3B8] tabular-nums"
             style={{ fontFeatureSettings: '"tnum"' }}
           >
-            {formatRelativeTime(expense.createdAt)}
+            {payerLabel} paid · {formatRelativeTime(expense.createdAt)}
           </p>
         </div>
 

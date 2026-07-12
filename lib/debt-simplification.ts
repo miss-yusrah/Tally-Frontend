@@ -9,22 +9,49 @@ interface BalanceEntry {
   amount: number;
 }
 
+/** Guard against fractional minor units — all ledger math must be integers. */
+function assertIntegerMinorUnits(value: number, label: string): number {
+  if (!Number.isFinite(value)) {
+    console.warn(`[debt-simplification] Invalid ${label}: ${value}`);
+    return 0;
+  }
+  if (!Number.isInteger(value)) {
+    console.warn(
+      `[debt-simplification] Non-integer ${label}: ${value} — rounding`
+    );
+    return Math.round(value);
+  }
+  return value;
+}
+
 /**
- * Greedy minimum cash flow debt simplification.
- * All amounts must be integer minor units.
- * Positive = owed money, negative = owes money.
+ * Greedy minimum-cash-flow debt simplification.
+ *
+ * Input balances must already be net of recorded settlements (4.7): callers
+ * pass settlement-adjusted net positions via computeNetBalances(), which
+ * applies SETTLE# records before this function runs.
+ *
+ * All amounts are integer minor units in the trip base currency.
+ * Positive = creditor (owed money); negative = debtor (owes money).
+ * Zero-balance members are omitted from the output entirely.
  */
 export function simplifyDebts(
   balances: Record<string, number>
 ): SimplifiedPayment[] {
   const creditors: BalanceEntry[] = Object.entries(balances)
-    .filter(([, amount]) => amount > 0)
-    .map(([userId, amount]) => ({ userId, amount }))
+    .map(([userId, amount]) => ({
+      userId,
+      amount: assertIntegerMinorUnits(amount, `balance:${userId}`),
+    }))
+    .filter(({ amount }) => amount > 0)
     .sort((a, b) => b.amount - a.amount);
 
   const debtors: BalanceEntry[] = Object.entries(balances)
-    .filter(([, amount]) => amount < 0)
-    .map(([userId, amount]) => ({ userId, amount }))
+    .map(([userId, amount]) => ({
+      userId,
+      amount: assertIntegerMinorUnits(amount, `balance:${userId}`),
+    }))
+    .filter(({ amount }) => amount < 0)
     .sort((a, b) => a.amount - b.amount);
 
   const payments: SimplifiedPayment[] = [];
@@ -36,7 +63,10 @@ export function simplifyDebts(
     const creditor = creditors[ci];
     const debtor = debtors[di];
 
-    const amount = Math.min(creditor.amount, -debtor.amount);
+    const amount = assertIntegerMinorUnits(
+      Math.min(creditor.amount, -debtor.amount),
+      "settlement-amount"
+    );
 
     if (amount > 0) {
       payments.push({

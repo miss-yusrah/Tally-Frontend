@@ -89,7 +89,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
 
           <div className="mx-6 mt-6 border-t border-[#ffffff0f]" />
 
-          <section className="mt-6">
+          <section id="expenses" className="mt-6 scroll-mt-20">
             <h2 className="mb-4 px-6 text-[15px] font-semibold text-[#F8F8FF]">
               Expenses
             </h2>

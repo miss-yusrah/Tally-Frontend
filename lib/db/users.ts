@@ -1,5 +1,4 @@
-import { GetCommand, PutCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { docClient, TABLE_NAME, isDynamoConfigured } from "@/lib/dynamodb";
+import { isDynamoConfigured } from "@/lib/dynamo-config";
 import type {
   AuthProvider,
   CreateUserInput,
@@ -21,6 +20,14 @@ function userPk(id: string) {
 
 function emailPk(email: string) {
   return `EMAIL#${normalizeEmail(email)}`;
+}
+
+async function loadDynamo() {
+  const [{ docClient, TABLE_NAME }, commands] = await Promise.all([
+    import("@/lib/dynamodb"),
+    import("@aws-sdk/lib-dynamodb"),
+  ]);
+  return { docClient, TABLE_NAME, ...commands };
 }
 
 function toUserRecord(item: Record<string, unknown>): UserRecord {
@@ -93,6 +100,7 @@ export async function findUserByEmail(
     return memoryFindByEmail(normalized);
   }
 
+  const { docClient, TABLE_NAME, GetCommand } = await loadDynamo();
   const emailLookup = await docClient.send(
     new GetCommand({
       TableName: TABLE_NAME,
@@ -110,6 +118,7 @@ export async function findUserById(id: string): Promise<UserRecord | null> {
     return memoryFindById(id);
   }
 
+  const { docClient, TABLE_NAME, GetCommand } = await loadDynamo();
   const result = await docClient.send(
     new GetCommand({
       TableName: TABLE_NAME,
@@ -147,6 +156,7 @@ export async function createUser(input: CreateUserInput): Promise<UserRecord> {
     updatedAt: now,
   };
 
+  const { docClient, TABLE_NAME, PutCommand } = await loadDynamo();
   await docClient.send(
     new PutCommand({
       TableName: TABLE_NAME,
@@ -202,6 +212,7 @@ export async function updateUser(
   names["#updatedAt"] = "updatedAt";
   values[":updatedAt"] = new Date().toISOString();
 
+  const { docClient, TABLE_NAME, UpdateCommand } = await loadDynamo();
   const result = await docClient.send(
     new UpdateCommand({
       TableName: TABLE_NAME,

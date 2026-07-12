@@ -85,6 +85,7 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
         expensesByTrip: { ...state.expensesByTrip, [tripId]: expenses },
         isLoading: false,
       }));
+      useBalanceStore.getState().recomputeBalances(tripId);
     } catch (error) {
       console.error("Failed to fetch expenses:", error);
       set({ isLoading: false });
@@ -149,6 +150,8 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
       },
     }));
 
+    useBalanceStore.getState().recomputeBalances(tripId);
+
     void (async () => {
       try {
         const saved = await persistExpense({
@@ -187,7 +190,7 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
     return optimistic;
   },
 
-  removeExpenseFromTrip: (tripId, expenseId) =>
+  removeExpenseFromTrip: (tripId, expenseId) => {
     set((state) => ({
       expensesByTrip: {
         ...state.expensesByTrip,
@@ -195,7 +198,9 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
           (e) => e.id !== expenseId
         ),
       },
-    })),
+    }));
+    useBalanceStore.getState().recomputeBalances(tripId);
+  },
 
   clearExpenses: () =>
     set({

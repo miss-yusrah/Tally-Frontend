@@ -9,6 +9,7 @@ import {
   fetchTripDetail as fetchTripDetailDb,
   type JoinTripResult,
 } from "@/lib/db/trips";
+import { useBalanceStore } from "@/store/balanceStore";
 
 const PENDING_INVITE_KEY = "tally_pending_invite";
 
@@ -148,6 +149,9 @@ export const useTripStore = create<TripState>((set, get) => ({
         }));
       } else {
         set({ members, isLoading: false });
+      }
+      if (members.length > 0) {
+        useBalanceStore.getState().recomputeBalances(tripId);
       }
       return trip;
     } catch (error) {

@@ -426,6 +426,32 @@
   }
 }
 
+@keyframes settlement-row-enter {
+  from {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+  }
+  to {
+    max-height: 88px;
+    opacity: 1;
+    margin-top: 0;
+  }
+}
+
+.animate-settlement-row-enter {
+  animation: settlement-row-enter 300ms var(--ease-tally) both;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-settlement-row-enter {
+    animation: none !important;
+    max-height: none;
+    opacity: 1;
+  }
+}
+
 @keyframes expense-row-enter {
   from {
     max-height: 0;

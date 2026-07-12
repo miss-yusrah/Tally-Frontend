@@ -1,6 +1,5 @@
-import { GetCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import { docClient, TABLE_NAME, isDynamoConfigured } from "@/lib/dynamodb";
+import { isDynamoConfigured } from "@/lib/dynamo-config";
 import type { TripMember } from "@/types";
 
 interface MemberRow {
@@ -24,6 +23,14 @@ function memberPk(tripId: string, userId: string) {
 
 function tripMembersGsiPk(tripId: string) {
   return `TRIP#${tripId}`;
+}
+
+async function loadDynamo() {
+  const [{ docClient, TABLE_NAME }, commands] = await Promise.all([
+    import("@/lib/dynamodb"),
+    import("@aws-sdk/lib-dynamodb"),
+  ]);
+  return { docClient, TABLE_NAME, ...commands };
 }
 
 export function mapMemberRow(row: MemberRow): TripMember {
@@ -102,6 +109,7 @@ function memoryInsertMember(member: TripMember): void {
 }
 
 async function fetchMembersDynamo(tripId: string): Promise<TripMember[]> {
+  const { docClient, TABLE_NAME, QueryCommand } = await loadDynamo();
   const result = await docClient.send(
     new QueryCommand({
       TableName: TABLE_NAME,
@@ -130,6 +138,7 @@ async function getMemberDynamo(
   tripId: string,
   userId: string
 ): Promise<TripMember | null> {
+  const { docClient, TABLE_NAME, GetCommand } = await loadDynamo();
   const result = await docClient.send(
     new GetCommand({
       TableName: TABLE_NAME,
@@ -149,6 +158,7 @@ async function getMemberDynamo(
 }
 
 async function insertMemberDynamo(member: TripMember): Promise<void> {
+  const { docClient, TABLE_NAME, PutCommand } = await loadDynamo();
   await docClient.send(
     new PutCommand({
       TableName: TABLE_NAME,

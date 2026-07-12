@@ -134,6 +134,13 @@ export interface SimplifiedPayment {
   amountMinorUnits: number;
 }
 
+/** Per-trip balance snapshot written by balanceStore.recomputeBalances. */
+export interface TripBalanceSnapshot {
+  netPositions: Record<string, number>;
+  simplifiedDebts: SimplifiedPayment[];
+  memberBalances: Balance[];
+}
+
 export interface FXRate {
   baseCurrency: string;
   targetCurrency: string;
