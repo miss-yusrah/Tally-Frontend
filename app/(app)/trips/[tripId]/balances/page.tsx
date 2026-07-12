@@ -13,18 +13,28 @@ import {
   YourPositionCard,
   type PositionState,
 } from "@/features/balances/YourPositionCard";
+import {
+  SettlementConfirmSheet,
+  SettledSection,
+} from "@/features/settlements";
 import { Spinner } from "@/components/ui/Spinner";
 import {
   useActiveTrip,
   useBalanceStore,
   useExpenseStore,
+  useOpenBottomSheet,
+  useSettlementStore,
+  useSettlementsForTrip,
+  useSettlingKeysForTrip,
   useTripBalances,
   useTripMembers,
   useTripStore,
   useTrips,
   useUser,
+  settlementPaymentKey,
 } from "@/store";
 import { cn } from "@/lib/utils";
+import type { SimplifiedPayment } from "@/types";
 
 interface BalancesPageProps {
   params: { tripId: string };
@@ -41,8 +51,14 @@ export default function BalancesPage({ params }: BalancesPageProps) {
   const trips = useTrips();
   const members = useTripMembers();
   const snapshot = useTripBalances(tripId);
+  const settlements = useSettlementsForTrip(tripId);
+  const settlingKeys = useSettlingKeysForTrip(tripId);
   const recomputeBalances = useBalanceStore((s) => s.recomputeBalances);
+  const fetchSettlementHistory = useSettlementStore(
+    (s) => s.fetchSettlementHistory
+  );
   const isCalculating = useBalanceStore((s) => s.isCalculating);
+  const openBottomSheet = useOpenBottomSheet();
 
   const trip =
     activeTrip?.id === tripId
@@ -54,13 +70,21 @@ export default function BalancesPage({ params }: BalancesPageProps) {
   useEffect(() => {
     void useTripStore.getState().fetchTripDetail(tripId, { silent: true });
     void useExpenseStore.getState().fetchExpenses(tripId);
-  }, [tripId]);
+    void fetchSettlementHistory(tripId);
+  }, [tripId, fetchSettlementHistory]);
+
+  useEffect(() => {
+    const onFocus = () => {
+      void fetchSettlementHistory(tripId);
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [tripId, fetchSettlementHistory]);
 
   useEffect(() => {
     recomputeBalances(tripId);
   }, [tripId, recomputeBalances]);
 
-  // Recompute whenever expenses for this trip change (reactive, no pull-to-refresh).
   const expenses = useExpenseStore((s) => s.expensesByTrip[tripId]);
   const expenseKey = useMemo(
     () =>
@@ -78,9 +102,17 @@ export default function BalancesPage({ params }: BalancesPageProps) {
     [members]
   );
 
+  const settlementKey = useMemo(
+    () =>
+      settlements
+        .map((s) => `${s.id}:${s.settledAt}:${s.amountMinorUnits}`)
+        .join("|"),
+    [settlements]
+  );
+
   useEffect(() => {
     recomputeBalances(tripId);
-  }, [tripId, expenseKey, memberKey, recomputeBalances]);
+  }, [tripId, expenseKey, memberKey, settlementKey, recomputeBalances]);
 
   const currentUserId = user?.id;
   const userNet = currentUserId
@@ -130,10 +162,26 @@ export default function BalancesPage({ params }: BalancesPageProps) {
     [snapshot.memberBalances, currentUserId]
   );
 
+  const openConfirmSheet = useCallback(
+    (payment: SimplifiedPayment) => {
+      if (!currentUserId) return;
+      openBottomSheet(
+        <SettlementConfirmSheet
+          tripId={tripId}
+          payment={payment}
+          payer={memberById.get(payment.fromUserId)}
+          recipient={memberById.get(payment.toUserId)}
+          currency={currency}
+          currentUserId={currentUserId}
+        />,
+        { height: "40" }
+      );
+    },
+    [tripId, currency, currentUserId, memberById, openBottomSheet]
+  );
+
   const showLoading = isCalculating && snapshot.memberBalances.length === 0;
 
-  // Return to wherever the user came from (Balances overview or trip detail);
-  // fall back to the Balances tab on a cold/direct load with no in-app history.
   const handleBack = useCallback(() => {
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.back();
@@ -198,17 +246,18 @@ export default function BalancesPage({ params }: BalancesPageProps) {
             ) : (
               <div className="flex flex-col gap-3">
                 {snapshot.simplifiedDebts.map((payment) => {
-                  const key = `${payment.fromUserId}-${payment.toUserId}-${payment.amountMinorUnits}`;
+                  const key = settlementPaymentKey(payment);
                   return (
                     <SettlementCard
                       key={key}
                       payment={payment}
-                      tripId={tripId}
                       payer={memberById.get(payment.fromUserId)}
                       recipient={memberById.get(payment.toUserId)}
                       currency={currency}
                       currentUserId={currentUserId}
                       isEntering={enteringKeys.has(key)}
+                      isSettling={settlingKeys.includes(key)}
+                      onOpen={() => openConfirmSheet(payment)}
                     />
                   );
                 })}
@@ -234,6 +283,14 @@ export default function BalancesPage({ params }: BalancesPageProps) {
               ))}
             </div>
           </section>
+
+          <SettledSection
+            tripId={tripId}
+            settlements={settlements}
+            memberById={memberById}
+            currency={currency}
+            currentUserId={currentUserId}
+          />
 
           <div className="mt-8 flex justify-center pb-4">
             <Link

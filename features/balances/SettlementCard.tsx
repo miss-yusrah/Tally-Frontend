@@ -1,24 +1,27 @@
 "use client";
 
-import Link from "next/link";
+import { useCallback } from "react";
 import { Check, ChevronRight } from "lucide-react";
 import {
   getAvatarColorForUser,
   getMemberInitial,
 } from "@/lib/avatar-colors";
 import { formatCurrency } from "@/lib/currency";
+import { settlementDisplayName } from "@/features/settlements/settlementDisplay";
 import { cn } from "@/lib/utils";
 import type { TripMember } from "@/types";
 import type { SimplifiedPayment } from "@/types";
+import { Spinner } from "@/components/ui/Spinner";
 
 interface SettlementCardProps {
   payment: SimplifiedPayment;
-  tripId: string;
   payer: TripMember | undefined;
   recipient: TripMember | undefined;
   currency: string;
   currentUserId?: string;
   isEntering?: boolean;
+  isSettling?: boolean;
+  onOpen: () => void;
 }
 
 function MiniAvatar({
@@ -61,44 +64,37 @@ function MiniAvatar({
   );
 }
 
-function displayName(
-  member: TripMember | undefined,
-  userId: string,
-  currentUserId?: string
-): string {
-  if (userId === currentUserId) return "You";
-  const full = member?.displayName?.trim();
-  if (!full) return "Member";
-  const parts = full.split(" ");
-  if (parts.length >= 2) return `${parts[0]} ${parts[1].charAt(0)}.`;
-  return full;
-}
-
 export function SettlementCard({
   payment,
-  tripId,
   payer,
   recipient,
   currency,
   currentUserId,
   isEntering = false,
+  isSettling = false,
+  onOpen,
 }: SettlementCardProps) {
-  const payerLabel = displayName(payer, payment.fromUserId, currentUserId);
-  const recipientLabel = displayName(
+  const payerLabel = settlementDisplayName(payer, payment.fromUserId, currentUserId);
+  const recipientLabel = settlementDisplayName(
     recipient,
     payment.toUserId,
     currentUserId
   );
 
-  const href = `/trips/${tripId}/settlements/confirm?from=${payment.fromUserId}&to=${payment.toUserId}&amount=${payment.amountMinorUnits}`;
+  const handleClick = useCallback(() => {
+    if (!isSettling) onOpen();
+  }, [isSettling, onOpen]);
 
   return (
-    <Link
-      href={href}
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={isSettling}
       className={cn(
-        "flex h-[76px] items-center gap-3 rounded-[16px] border border-[#ffffff0f] bg-[#13131A] px-4",
+        "flex h-[76px] w-full items-center gap-3 rounded-[16px] border border-[#ffffff0f] bg-[#13131A] px-4 text-left",
         "transition-all duration-fast ease-tally active:scale-[0.98] active:bg-[#1C1C27]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C3AED]",
+        "disabled:opacity-80",
         isEntering && "animate-settlement-row-enter"
       )}
     >
@@ -109,7 +105,14 @@ export function SettlementCard({
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-[14px] font-medium text-[#94A3B8]">
-          {payerLabel} pays {recipientLabel}
+          {isSettling ? (
+            <span className="inline-flex items-center gap-2">
+              <Spinner size="sm" />
+              Settling…
+            </span>
+          ) : (
+            `${payerLabel} pays ${recipientLabel}`
+          )}
         </p>
       </div>
 
@@ -124,7 +127,7 @@ export function SettlementCard({
         className="h-4 w-4 shrink-0 text-[#475569]"
         strokeWidth={2}
       />
-    </Link>
+    </button>
   );
 }
 

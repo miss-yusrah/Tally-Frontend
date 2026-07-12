@@ -40,9 +40,17 @@ export {
   useBalancesFetchingAll,
   useBalances,
   useSimplifiedPayments,
-  useSettlements,
   useBalancesLoading,
 } from "./balanceStore";
+
+export {
+  useSettlementStore,
+  useSettlementsForTrip,
+  useSettlingKeysForTrip,
+  useSettlementsLoading,
+  useSettlements,
+  settlementPaymentKey,
+} from "./settlementStore";
 
 export {
   useUIStore,

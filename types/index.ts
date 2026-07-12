@@ -117,9 +117,17 @@ export interface Settlement {
   tripId: string;
   fromUserId: string;
   toUserId: string;
+  /** Integer minor units in the trip's base currency. */
   amountMinorUnits: number;
   currency: string;
+  /** User who confirmed the off-app payment (must be fromUserId / payer). */
+  confirmedBy: string;
+  /** Client-generated UUID at confirm tap — unique insert guard for idempotency. */
+  idempotencyToken: string;
+  status: "confirmed";
   settledAt: string;
+  /** Optimistic entries pending server confirmation */
+  _optimistic?: boolean;
 }
 
 export interface Balance {

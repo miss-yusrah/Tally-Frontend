@@ -87,11 +87,10 @@ export function simplifyDebts(
 }
 
 /**
- * BALANCES (4.6) — multi-currency invariant:
- * every number in this ledger is TRIP BASE CURRENCY minor units. The payer is
- * credited with the expense's CONVERTED amount (getExpenseAmountForBalances,
- * never amountMinorUnits) and split shares — stored in the original currency —
- * are scaled into base currency before being debited.
+ * BALANCES (4.6) + SETTLEMENTS (4.7) integration:
+ * net position = expense-derived shares MINUS confirmed settlements.
+ * Settlements credit fromUserId (debtor paid) and debit toUserId (creditor received)
+ * before simplifyDebts() runs on the adjusted positions.
  */
 export function computeNetBalances(
   memberIds: string[],

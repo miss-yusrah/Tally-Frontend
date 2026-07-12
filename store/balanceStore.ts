@@ -6,10 +6,10 @@ import {
 import { fetchMembersForTrip } from "@/lib/db/members";
 import { useAuthStore } from "@/store/authStore";
 import { useExpenseStore } from "@/store/expenseStore";
+import { useSettlementStore } from "@/store/settlementStore";
 import { useTripStore } from "@/store/tripStore";
 import type {
   Balance,
-  Settlement,
   SimplifiedPayment,
   TripBalanceSnapshot,
   TripMember,
@@ -22,15 +22,12 @@ interface AggregateSummary {
 
 interface BalanceState {
   balancesByTrip: Record<string, TripBalanceSnapshot>;
-  settlementsByTrip: Record<string, Settlement[]>;
   /** MVP: raw minor-unit sums across trips — displayed in homeCurrency without FX conversion. */
   aggregateSummary: AggregateSummary;
   unsettledCountByTrip: Record<string, number>;
   membersByTrip: Record<string, TripMember[]>;
   isCalculating: boolean;
   isFetchingAll: boolean;
-  setSettlementsForTrip: (tripId: string, settlements: Settlement[]) => void;
-  addSettlement: (settlement: Settlement) => void;
   recomputeBalances: (tripId: string, membersOverride?: TripMember[]) => void;
   fetchAllTripBalances: (userId: string) => Promise<void>;
   clearBalanceState: () => void;
@@ -106,33 +103,11 @@ function deriveUnsettledCounts(
 
 export const useBalanceStore = create<BalanceState>((set, get) => ({
   balancesByTrip: {},
-  settlementsByTrip: {},
   aggregateSummary: EMPTY_AGGREGATE,
   unsettledCountByTrip: {},
   membersByTrip: {},
   isCalculating: false,
   isFetchingAll: false,
-
-  setSettlementsForTrip: (tripId, settlements) =>
-    set((state) => ({
-      settlementsByTrip: {
-        ...state.settlementsByTrip,
-        [tripId]: settlements,
-      },
-    })),
-
-  addSettlement: (settlement) => {
-    set((state) => ({
-      settlementsByTrip: {
-        ...state.settlementsByTrip,
-        [settlement.tripId]: [
-          ...(state.settlementsByTrip[settlement.tripId] ?? []),
-          settlement,
-        ],
-      },
-    }));
-    get().recomputeBalances(settlement.tripId);
-  },
 
   recomputeBalances: (tripId, membersOverride) => {
     set({ isCalculating: true });
@@ -150,7 +125,8 @@ export const useBalanceStore = create<BalanceState>((set, get) => ({
     const expenses =
       useExpenseStore.getState().expensesByTrip[tripId] ?? [];
 
-    const settlements = get().settlementsByTrip[tripId] ?? [];
+    const settlements =
+      useSettlementStore.getState().settlementsByTrip[tripId] ?? [];
 
     const membersPatch =
       membersOverride?.length || members.length
@@ -192,11 +168,13 @@ export const useBalanceStore = create<BalanceState>((set, get) => ({
         baseCurrencyAmount: e.baseCurrencyAmount,
         splitMap: e.splitMap,
       })),
-      settlements.map((s) => ({
-        fromUserId: s.fromUserId,
-        toUserId: s.toUserId,
-        amountMinorUnits: s.amountMinorUnits,
-      }))
+      settlements
+        .filter((s) => !s._optimistic)
+        .map((s) => ({
+          fromUserId: s.fromUserId,
+          toUserId: s.toUserId,
+          amountMinorUnits: s.amountMinorUnits,
+        }))
     );
 
     const simplifiedDebts: SimplifiedPayment[] = simplifyDebts(netPositions);
@@ -244,6 +222,8 @@ export const useBalanceStore = create<BalanceState>((set, get) => ({
             await expenseStore.fetchExpenses(trip.id);
           }
 
+          await useSettlementStore.getState().fetchSettlementHistory(trip.id);
+
           const members = await fetchMembersForTrip(trip.id).catch(() => []);
           get().recomputeBalances(trip.id, members);
         })
@@ -256,7 +236,6 @@ export const useBalanceStore = create<BalanceState>((set, get) => ({
   clearBalanceState: () =>
     set({
       balancesByTrip: {},
-      settlementsByTrip: {},
       aggregateSummary: EMPTY_AGGREGATE,
       unsettledCountByTrip: {},
       membersByTrip: {},
@@ -299,9 +278,6 @@ export const useSimplifiedPayments = () =>
     const first = Object.values(s.balancesByTrip)[0];
     return first?.simplifiedDebts ?? [];
   });
-
-export const useSettlements = () =>
-  useBalanceStore((s) => Object.values(s.settlementsByTrip).flat());
 
 export const useBalancesLoading = () =>
   useBalanceStore((s) => s.isCalculating || s.isFetchingAll);
