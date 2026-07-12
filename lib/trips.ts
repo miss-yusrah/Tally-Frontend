@@ -42,3 +42,13 @@ export function partitionTripsByStatus(trips: Trip[]): {
 
   return { active: active.sort(byNewest), past: past.sort(byNewest) };
 }
+
+/** Sort trips by startDate descending (most recent first). Undated trips sink to the bottom. */
+export function sortTripsByStartDate(trips: Trip[]): Trip[] {
+  return [...trips].sort((a, b) => {
+    const aDate = a.startDate || "0000-00-00";
+    const bDate = b.startDate || "0000-00-00";
+    return bDate.localeCompare(aDate);
+  });
+}
+

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { MemberBalanceRow } from "@/features/balances/MemberBalanceRow";
 import {
@@ -34,6 +35,7 @@ const focusRing =
 
 export default function BalancesPage({ params }: BalancesPageProps) {
   const { tripId } = params;
+  const router = useRouter();
   const user = useUser();
   const activeTrip = useActiveTrip();
   const trips = useTrips();
@@ -130,12 +132,23 @@ export default function BalancesPage({ params }: BalancesPageProps) {
 
   const showLoading = isCalculating && snapshot.memberBalances.length === 0;
 
+  // Return to wherever the user came from (Balances overview or trip detail);
+  // fall back to the Balances tab on a cold/direct load with no in-app history.
+  const handleBack = useCallback(() => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/balances");
+    }
+  }, [router]);
+
   return (
     <div className="flex min-h-dvh flex-col bg-[#0A0A0F]">
       <header className="sticky top-0 z-30 flex h-16 items-center border-b border-[#ffffff0f] bg-[#0A0A0F]/95 backdrop-blur-lg safe-top">
-        <Link
-          href={`/trips/${tripId}`}
-          aria-label="Back to trip"
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label="Back"
           className={cn(
             "ml-2 flex h-10 w-10 items-center justify-center rounded-full text-[#F8F8FF]",
             "transition-colors hover:bg-[#1C1C27]",
@@ -157,7 +170,7 @@ export default function BalancesPage({ params }: BalancesPageProps) {
               strokeLinejoin="round"
             />
           </svg>
-        </Link>
+        </button>
         <h1 className="pointer-events-none absolute inset-x-0 text-center text-[17px] font-semibold text-[#F8F8FF]">
           Balances
         </h1>

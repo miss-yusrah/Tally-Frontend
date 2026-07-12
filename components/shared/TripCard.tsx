@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { Calendar, MapPin } from "lucide-react";
-import {
-  getAvatarColorForUser,
-  getMemberInitial,
-} from "@/lib/avatar-colors";
+import { MemberAvatarStack } from "@/components/shared/MemberAvatarStack";
 import { formatCompactDateRange, cn } from "@/lib/utils";
 import type { Trip, TripMember } from "@/types";
 
@@ -13,54 +10,6 @@ interface TripCardProps {
   /** Past trips render muted so active trips stay the focal content. */
   variant?: "active" | "past";
   className?: string;
-}
-
-function MemberAvatarStack({ members }: { members: TripMember[] }) {
-  const visible = members.slice(0, 4);
-  const overflow = members.length - visible.length;
-
-  return (
-    <div className="flex items-center" aria-label={`${members.length} members`}>
-      {visible.map((member, i) => (
-        <div
-          key={member.userId}
-          className={cn(
-            "relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full",
-            "border-2 border-[#13131A] text-[10px] font-semibold text-white",
-            i > 0 && "-ml-2"
-          )}
-          style={{
-            zIndex: visible.length - i,
-            backgroundColor: getAvatarColorForUser(member.userId),
-          }}
-          title={member.displayName}
-        >
-          {member.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={member.avatarUrl}
-              alt=""
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            getMemberInitial(member.displayName)
-          )}
-        </div>
-      ))}
-      {overflow > 0 && (
-        <div
-          className={cn(
-            "relative -ml-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
-            "border-2 border-[#13131A] bg-[#1C1C27]",
-            "text-[11px] font-semibold text-[#94A3B8]"
-          )}
-          style={{ zIndex: 0 }}
-        >
-          +{overflow}
-        </div>
-      )}
-    </div>
-  );
 }
 
 export function TripCard({
