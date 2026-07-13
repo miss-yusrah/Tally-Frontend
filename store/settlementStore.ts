@@ -6,12 +6,19 @@ import {
   persistSettlement,
   SettlementDuplicateError,
 } from "@/lib/db/settlements";
-import { useBalanceStore } from "@/store/balanceStore";
 import { useTripStore } from "@/store/tripStore";
 import { useUIStore } from "@/store/uiStore";
 import type { Settlement, SimplifiedPayment } from "@/types";
 
+/** Lazy access breaks balanceStore ↔ settlementStore circular import at init. */
+function getBalanceStoreState() {
+  const { useBalanceStore } =
+    require("@/store/balanceStore") as typeof import("@/store/balanceStore");
+  return useBalanceStore.getState();
+}
+
 const EMPTY_SETTLEMENTS: Settlement[] = [];
+const EMPTY_SETTLING_KEYS: string[] = [];
 
 /** Stable key for a simplified debt row / settling transient state. */
 export function settlementPaymentKey(payment: SimplifiedPayment): string {
@@ -39,7 +46,7 @@ function paymentStillOutstanding(
   payment: SimplifiedPayment
 ): boolean {
   const debts =
-    useBalanceStore.getState().balancesByTrip[tripId]?.simplifiedDebts ?? [];
+    getBalanceStoreState().balancesByTrip[tripId]?.simplifiedDebts ?? [];
   const key = settlementPaymentKey(payment);
   return debts.some((d) => settlementPaymentKey(d) === key);
 }
@@ -60,7 +67,7 @@ export const useSettlementStore = create<SettlementState>((set, get) => ({
         },
         isLoading: false,
       }));
-      useBalanceStore.getState().recomputeBalances(tripId);
+      // Balances page reacts to settlementKey and calls recomputeBalances.
     } catch (error) {
       console.error("Failed to fetch settlement history:", error);
       set({ isLoading: false });
@@ -126,7 +133,7 @@ export const useSettlementStore = create<SettlementState>((set, get) => ({
                 ),
               },
             }));
-            useBalanceStore.getState().recomputeBalances(tripId);
+            getBalanceStoreState().recomputeBalances(tripId);
             return true;
           }
         } else {
@@ -154,7 +161,7 @@ export const useSettlementStore = create<SettlementState>((set, get) => ({
 
       const trip = useTripStore.getState().trips.find((t) => t.id === tripId);
       if (trip) {
-        useBalanceStore.getState().recomputeBalances(tripId);
+        getBalanceStoreState().recomputeBalances(tripId);
       }
 
       return true;
@@ -188,7 +195,7 @@ export const useSettlementsForTrip = (tripId: string) =>
   useSettlementStore((s) => s.settlementsByTrip[tripId] ?? EMPTY_SETTLEMENTS);
 
 export const useSettlingKeysForTrip = (tripId: string) =>
-  useSettlementStore((s) => s.settlingKeysByTrip[tripId] ?? []);
+  useSettlementStore((s) => s.settlingKeysByTrip[tripId] ?? EMPTY_SETTLING_KEYS);
 
 export const useSettlementsLoading = () =>
   useSettlementStore((s) => s.isLoading);

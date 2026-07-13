@@ -20,6 +20,7 @@ export function BottomNav() {
   const openBottomSheet = useOpenBottomSheet();
 
   const onTripContext = Boolean(activeTrip && pathname.startsWith("/trips/"));
+  const onTripBalancesRoute = /^\/trips\/[^/]+\/balances$/.test(pathname);
 
   return (
     <nav
@@ -35,8 +36,11 @@ export function BottomNav() {
         {tabs.map((tab) => {
           const isActive =
             tab.href === "/dashboard"
-              ? pathname === "/dashboard" || pathname.startsWith("/trips")
-              : pathname.startsWith(tab.href);
+              ? pathname === "/dashboard" ||
+                (pathname.startsWith("/trips") && !onTripBalancesRoute)
+              : tab.href === "/balances"
+                ? pathname.startsWith("/balances") || onTripBalancesRoute
+                : pathname.startsWith(tab.href);
 
           if ("isFab" in tab && tab.isFab) {
             const fabClasses = cn(

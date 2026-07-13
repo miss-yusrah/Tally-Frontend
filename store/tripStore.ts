@@ -48,6 +48,7 @@ function deletePendingInvite() {
 
   try {
     sessionStorage.removeItem(PENDING_INVITE_KEY);
+    sessionStorage.removeItem("tally_pending_invite_resolved");
   } catch {
     // ignore
   }

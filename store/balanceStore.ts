@@ -6,8 +6,15 @@ import {
 import { fetchMembersForTrip } from "@/lib/db/members";
 import { useAuthStore } from "@/store/authStore";
 import { useExpenseStore } from "@/store/expenseStore";
-import { useSettlementStore } from "@/store/settlementStore";
 import { useTripStore } from "@/store/tripStore";
+import type { Settlement } from "@/types";
+
+/** Lazy access breaks balanceStore ↔ settlementStore circular import at init. */
+function getSettlementStoreState() {
+  const { useSettlementStore } =
+    require("@/store/settlementStore") as typeof import("@/store/settlementStore");
+  return useSettlementStore.getState();
+}
 import type {
   Balance,
   SimplifiedPayment,
@@ -40,6 +47,8 @@ const EMPTY_SNAPSHOT: TripBalanceSnapshot = {
 };
 
 const EMPTY_AGGREGATE: AggregateSummary = { totalOwed: 0, totalOwing: 0 };
+const EMPTY_DEBTS: SimplifiedPayment[] = [];
+const EMPTY_MEMBER_BALANCES: Balance[] = [];
 
 function buildMemberBalances(
   memberIds: string[],
@@ -101,6 +110,18 @@ function deriveUnsettledCounts(
   return counts;
 }
 
+function snapshotsEqual(
+  a: TripBalanceSnapshot | undefined,
+  b: TripBalanceSnapshot
+): boolean {
+  if (!a) return false;
+  return (
+    JSON.stringify(a.netPositions) === JSON.stringify(b.netPositions) &&
+    JSON.stringify(a.simplifiedDebts) === JSON.stringify(b.simplifiedDebts) &&
+    JSON.stringify(a.memberBalances) === JSON.stringify(b.memberBalances)
+  );
+}
+
 export const useBalanceStore = create<BalanceState>((set, get) => ({
   balancesByTrip: {},
   aggregateSummary: EMPTY_AGGREGATE,
@@ -125,17 +146,24 @@ export const useBalanceStore = create<BalanceState>((set, get) => ({
     const expenses =
       useExpenseStore.getState().expensesByTrip[tripId] ?? [];
 
-    const settlements =
-      useSettlementStore.getState().settlementsByTrip[tripId] ?? [];
+    const settlements: Settlement[] =
+      getSettlementStoreState().settlementsByTrip[tripId] ?? [];
 
     const membersPatch =
       membersOverride?.length || members.length
-        ? {
-            membersByTrip: {
-              ...get().membersByTrip,
-              ...(members.length ? { [tripId]: members } : {}),
-            },
-          }
+        ? (() => {
+            const existing = get().membersByTrip[tripId];
+            const unchanged =
+              existing?.length === members.length &&
+              existing.every((m, i) => m.userId === members[i]?.userId);
+            if (unchanged) return {};
+            return {
+              membersByTrip: {
+                ...get().membersByTrip,
+                ...(members.length ? { [tripId]: members } : {}),
+              },
+            };
+          })()
         : {};
 
     if (memberIds.length === 0) {
@@ -185,19 +213,45 @@ export const useBalanceStore = create<BalanceState>((set, get) => ({
       displayNameFor
     );
 
+    const snapshot = { netPositions, simplifiedDebts, memberBalances };
+
     const balancesByTrip = {
       ...get().balancesByTrip,
-      [tripId]: { netPositions, simplifiedDebts, memberBalances },
+      [tripId]: snapshot,
     };
     const userId = useAuthStore.getState().user?.id;
     const trips = useTripStore.getState().trips;
+
+    const nextUnsettled = deriveUnsettledCounts(balancesByTrip);
+    const nextAggregate = deriveAggregateSummary(userId, trips, balancesByTrip);
+    const prev = get();
+
+    const balancesUnchanged = snapshotsEqual(prev.balancesByTrip[tripId], snapshot);
+    const unsettledUnchanged =
+      JSON.stringify(prev.unsettledCountByTrip) === JSON.stringify(nextUnsettled);
+    const aggregateUnchanged =
+      prev.aggregateSummary.totalOwed === nextAggregate.totalOwed &&
+      prev.aggregateSummary.totalOwing === nextAggregate.totalOwing;
+    const membersUnchanged = Object.keys(membersPatch).length === 0;
+
+    if (
+      balancesUnchanged &&
+      unsettledUnchanged &&
+      aggregateUnchanged &&
+      membersUnchanged
+    ) {
+      if (prev.isCalculating) {
+        set({ isCalculating: false });
+      }
+      return;
+    }
 
     set({
       isCalculating: false,
       balancesByTrip,
       ...membersPatch,
-      unsettledCountByTrip: deriveUnsettledCounts(balancesByTrip),
-      aggregateSummary: deriveAggregateSummary(userId, trips, balancesByTrip),
+      unsettledCountByTrip: nextUnsettled,
+      aggregateSummary: nextAggregate,
     });
   },
 
@@ -222,7 +276,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => ({
             await expenseStore.fetchExpenses(trip.id);
           }
 
-          await useSettlementStore.getState().fetchSettlementHistory(trip.id);
+          await getSettlementStoreState().fetchSettlementHistory(trip.id);
 
           const members = await fetchMembersForTrip(trip.id).catch(() => []);
           get().recomputeBalances(trip.id, members);
@@ -248,10 +302,10 @@ export const useTripBalances = (tripId: string) =>
   useBalanceStore((s) => s.balancesByTrip[tripId] ?? EMPTY_SNAPSHOT);
 
 export const useTripSimplifiedDebts = (tripId: string) =>
-  useBalanceStore((s) => s.balancesByTrip[tripId]?.simplifiedDebts ?? []);
+  useBalanceStore((s) => s.balancesByTrip[tripId]?.simplifiedDebts ?? EMPTY_DEBTS);
 
 export const useTripMemberBalances = (tripId: string) =>
-  useBalanceStore((s) => s.balancesByTrip[tripId]?.memberBalances ?? []);
+  useBalanceStore((s) => s.balancesByTrip[tripId]?.memberBalances ?? EMPTY_MEMBER_BALANCES);
 
 export const useBalancesCalculating = () =>
   useBalanceStore((s) => s.isCalculating);

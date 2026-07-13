@@ -29,6 +29,15 @@ export {
 } from "./expenseStore";
 
 export {
+  useSettlementStore,
+  useSettlementsForTrip,
+  useSettlingKeysForTrip,
+  useSettlementsLoading,
+  useSettlements,
+  settlementPaymentKey,
+} from "./settlementStore";
+
+export {
   useBalanceStore,
   useTripBalances,
   useTripSimplifiedDebts,
@@ -42,15 +51,6 @@ export {
   useSimplifiedPayments,
   useBalancesLoading,
 } from "./balanceStore";
-
-export {
-  useSettlementStore,
-  useSettlementsForTrip,
-  useSettlingKeysForTrip,
-  useSettlementsLoading,
-  useSettlements,
-  settlementPaymentKey,
-} from "./settlementStore";
 
 export {
   useUIStore,

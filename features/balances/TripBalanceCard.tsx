@@ -73,12 +73,14 @@ export function TripBalanceCard({
   className,
 }: TripBalanceCardProps) {
   const dateLabel = formatCompactDateRange(trip.startDate, trip.endDate);
+  const balanceHref = `/trips/${trip.id}/balances`;
 
   return (
     <Link
-      href={`/trips/${trip.id}/balances`}
+      href={balanceHref}
+      aria-label={`View ${trip.name} balances`}
       className={cn(
-        "block rounded-[20px] border border-[#ffffff0f] bg-[#13131A] p-5",
+        "block w-full rounded-[20px] border border-[#ffffff0f] bg-[#13131A] p-5 text-left",
         "shadow-[inset_0_1px_0_#ffffff0a]",
         "transition-all duration-fast ease-tally",
         "active:scale-[0.985] active:border-[#7C3AED60] active:bg-[#1C1C27]",

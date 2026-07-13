@@ -7,13 +7,15 @@ import { SettledRow } from "@/features/settlements/SettledRow";
 import { Spinner } from "@/components/ui/Spinner";
 import {
   useActiveTrip,
-  useSettlementStore,
-  useSettlementsForTrip,
-  useSettlementsLoading,
   useTripMembers,
   useTripStore,
   useTrips,
 } from "@/store";
+import {
+  useSettlementStore,
+  useSettlementsForTrip,
+  useSettlementsLoading,
+} from "@/store/settlementStore";
 import { cn } from "@/lib/utils";
 
 interface SettlementHistoryPageProps {

@@ -90,17 +90,23 @@ export default function GlobalBalancesPage() {
   const balancesByTrip = useBalanceStore((s) => s.balancesByTrip);
 
   const sortedTrips = useMemo(() => sortTripsByStartDate(trips), [trips]);
+  const tripIdsKey = useMemo(() => trips.map((t) => t.id).join(","), [trips]);
+
+  useEffect(() => {
+    // Stale invite tokens must not hijack navigation into per-trip balances.
+    useTripStore.getState().clearPendingInvite();
+  }, []);
 
   useEffect(() => {
     if (user?.onboardingComplete) {
       void fetchTrips(user);
     }
-  }, [user?.id, user?.onboardingComplete, fetchTrips, user]);
+  }, [user?.id, user?.onboardingComplete, fetchTrips]);
 
   useEffect(() => {
     if (!user?.id || trips.length === 0) return;
     void fetchAllTripBalances(user.id);
-  }, [user?.id, trips, fetchAllTripBalances]);
+  }, [user?.id, tripIdsKey, fetchAllTripBalances]);
 
   // Lazy member avatars — non-blocking background hydration per trip.
   useEffect(() => {

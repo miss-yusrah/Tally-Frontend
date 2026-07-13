@@ -103,8 +103,8 @@ export default function OnboardingPage() {
                 message: `You joined ${result.trip.name}`,
                 variant: "success",
               });
+              router.replace(`/trips/${result.trip.id}`);
             }
-            router.replace(`/trips/${result.trip.id}`);
             return;
           }
 

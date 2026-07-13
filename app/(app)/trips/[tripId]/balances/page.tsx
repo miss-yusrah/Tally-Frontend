@@ -23,16 +23,18 @@ import {
   useBalanceStore,
   useExpenseStore,
   useOpenBottomSheet,
-  useSettlementStore,
-  useSettlementsForTrip,
-  useSettlingKeysForTrip,
   useTripBalances,
   useTripMembers,
   useTripStore,
   useTrips,
   useUser,
-  settlementPaymentKey,
 } from "@/store";
+import {
+  settlementPaymentKey,
+  useSettlementStore,
+  useSettlementsForTrip,
+  useSettlingKeysForTrip,
+} from "@/store/settlementStore";
 import { cn } from "@/lib/utils";
 import type { SimplifiedPayment } from "@/types";
 
@@ -68,6 +70,8 @@ export default function BalancesPage({ params }: BalancesPageProps) {
   const currency = trip?.baseCurrency ?? "NGN";
 
   useEffect(() => {
+    // Clear any stale invite token so layout resolver cannot replace this route.
+    useTripStore.getState().clearPendingInvite();
     void useTripStore.getState().fetchTripDetail(tripId, { silent: true });
     void useExpenseStore.getState().fetchExpenses(tripId);
     void fetchSettlementHistory(tripId);
@@ -80,10 +84,6 @@ export default function BalancesPage({ params }: BalancesPageProps) {
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, [tripId, fetchSettlementHistory]);
-
-  useEffect(() => {
-    recomputeBalances(tripId);
-  }, [tripId, recomputeBalances]);
 
   const expenses = useExpenseStore((s) => s.expensesByTrip[tripId]);
   const expenseKey = useMemo(
@@ -150,7 +150,7 @@ export default function BalancesPage({ params }: BalancesPageProps) {
     }
 
     knownPaymentsRef.current = current;
-  }, [paymentIdsKey, snapshot.simplifiedDebts]);
+  }, [paymentIdsKey]);
 
   const sortedMembers = useMemo(
     () =>
