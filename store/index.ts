@@ -5,6 +5,7 @@ export {
   useIsAuthenticated,
   useAuthLoading,
   useHomeCurrency,
+  useIsUpdatingProfile,
   type AuthUser,
   type AuthStatus,
 } from "./authStore";
@@ -36,6 +37,14 @@ export {
   useSettlements,
   settlementPaymentKey,
 } from "./settlementStore";
+
+export {
+  useNotificationStore,
+  useNotifications,
+  useUnreadCount,
+  useNotificationsLoading,
+  useNotificationsFetched,
+} from "./notificationStore";
 
 export {
   useBalanceStore,

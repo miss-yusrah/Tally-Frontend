@@ -7,9 +7,10 @@ import { MemberRow } from "./MemberRow";
 
 interface MemberListProps {
   members: TripMember[];
+  currentUserId?: string;
 }
 
-export function MemberList({ members }: MemberListProps) {
+export function MemberList({ members, currentUserId }: MemberListProps) {
   const sorted = useMemo(() => sortTripMembers(members), [members]);
   const memberIdsKey = useMemo(
     () => sorted.map((m) => m.userId).join(","),
@@ -44,18 +45,19 @@ export function MemberList({ members }: MemberListProps) {
 
   if (sorted.length === 0) {
     return (
-      <p className="px-6 text-[14px] text-[#94A3B8]">
+      <p className="text-[14px] text-[#94A3B8]">
         No members yet. Share your invite link to bring the group in.
       </p>
     );
   }
 
   return (
-    <div className="mx-6">
+    <div>
       {sorted.map((member, index) => (
         <MemberRow
           key={member.userId}
           member={member}
+          isCurrentUser={member.userId === currentUserId}
           isEntering={enteringIds.has(member.userId)}
           showDivider={index < sorted.length - 1}
         />

@@ -116,8 +116,26 @@ export const useSettlementStore = create<SettlementState>((set, get) => ({
     try {
       let saved: Settlement;
 
+      const trip =
+        useTripStore.getState().activeTrip?.id === tripId
+          ? useTripStore.getState().activeTrip
+          : useTripStore.getState().trips.find((t) => t.id === tripId);
+      const members = useTripStore.getState().members;
+      const actorMember = members.find((m) => m.userId === confirmedBy);
+      const notify =
+        trip
+          ? {
+              tripName: trip.name,
+              actor: {
+                userId: confirmedBy,
+                displayName: actorMember?.displayName ?? "Member",
+                avatarUrl: actorMember?.avatarUrl,
+              },
+            }
+          : undefined;
+
       try {
-        saved = await persistSettlement(optimistic);
+        saved = await persistSettlement(optimistic, notify);
       } catch (error) {
         if (error instanceof SettlementDuplicateError) {
           const existing = await fetchSettlementByToken(idempotencyToken);
@@ -159,7 +177,6 @@ export const useSettlementStore = create<SettlementState>((set, get) => ({
         },
       }));
 
-      const trip = useTripStore.getState().trips.find((t) => t.id === tripId);
       if (trip) {
         getBalanceStoreState().recomputeBalances(tripId);
       }

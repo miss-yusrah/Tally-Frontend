@@ -55,7 +55,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/trips") ||
     pathname.startsWith("/add") ||
     pathname.startsWith("/balances") ||
-    pathname.startsWith("/profile");
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/notifications");
 
   const redirectTo = (path: string) => {
     const url = request.nextUrl.clone();
@@ -97,5 +98,6 @@ export const config = {
     "/add/:path*",
     "/balances/:path*",
     "/profile/:path*",
+    "/notifications/:path*",
   ],
 };

@@ -2,14 +2,20 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { Bell, Plus } from "lucide-react";
 import { useAuthSession } from "@/features/auth";
 import { Spinner } from "@/components/ui/Spinner";
 import { TripCard } from "@/components/shared/TripCard";
 import { fetchMembersForTrip } from "@/lib/db/members";
 import { getTimeGreeting } from "@/lib/greeting";
 import { partitionTripsByStatus } from "@/lib/trips";
-import { useTripStore, useTrips, useTripsLoading } from "@/store";
+import {
+  useNotificationStore,
+  useTripStore,
+  useTrips,
+  useTripsLoading,
+  useUnreadCount,
+} from "@/store";
 import { cn } from "@/lib/utils";
 import type { TripMember } from "@/types";
 
@@ -143,6 +149,8 @@ export default function DashboardPage() {
   const trips = useTrips();
   const isLoading = useTripsLoading();
   const fetchTrips = useTripStore((s) => s.fetchTrips);
+  const unreadCount = useUnreadCount();
+  const fetchNotifications = useNotificationStore((s) => s.fetchNotifications);
   const [membersByTrip, setMembersByTrip] = useState<
     Record<string, TripMember[]>
   >({});
@@ -152,6 +160,11 @@ export default function DashboardPage() {
       void fetchTrips(user);
     }
   }, [user?.id, user?.onboardingComplete, fetchTrips, user]);
+
+  useEffect(() => {
+    if (!user?.id || !user.onboardingComplete) return;
+    void fetchNotifications(user.id);
+  }, [user?.id, user?.onboardingComplete, fetchNotifications]);
 
   // Soft-load member faces for the avatar stacks — non-blocking.
   useEffect(() => {
@@ -210,13 +223,40 @@ export default function DashboardPage() {
             {firstName}
           </h1>
         </div>
-        <Link
-          href="/profile"
-          className={cn("ml-4 shrink-0 rounded-full", focusRing)}
-          aria-label="Profile"
-        >
-          <ProfileAvatar name={displayName} src={user?.avatarUrl} />
-        </Link>
+        <div className="ml-4 flex shrink-0 items-center gap-2">
+          <Link
+            href="/notifications"
+            className={cn(
+              "relative flex h-10 w-10 items-center justify-center rounded-full text-[#F8F8FF]",
+              "transition-colors hover:bg-[#1C1C27]",
+              focusRing
+            )}
+            aria-label={
+              unreadCount > 0
+                ? `Notifications, ${unreadCount} unread`
+                : "Notifications"
+            }
+          >
+            <Bell className="h-5 w-5" strokeWidth={2} />
+            {unreadCount > 0 ? (
+              <span
+                className={cn(
+                  "absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center",
+                  "rounded-full bg-[#F43F5E] px-1 text-[10px] font-bold text-white"
+                )}
+              >
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            ) : null}
+          </Link>
+          <Link
+            href="/profile"
+            className={cn("rounded-full", focusRing)}
+            aria-label="Profile"
+          >
+            <ProfileAvatar name={displayName} src={user?.avatarUrl} />
+          </Link>
+        </div>
       </header>
 
       <div className="relative z-10 flex flex-1 flex-col px-6">

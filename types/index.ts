@@ -163,3 +163,51 @@ export interface ApiError {
   code?: string;
   status?: number;
 }
+
+export type NotificationType =
+  | "member_joined"
+  | "expense_logged"
+  | "settlement_confirmed";
+
+export interface MemberJoinedPayload {
+  /** Organizer sees "joined your trip"; other members see invite copy. */
+  recipientRole?: "organizer" | "member";
+}
+
+export interface ExpenseLoggedPayload {
+  amount: number;
+  currency: string;
+  category: ExpenseCategory | null;
+  note?: string;
+}
+
+export interface SettlementConfirmedPayload {
+  amount: number;
+  currency: string;
+  fromUserId: string;
+  toUserId: string;
+}
+
+export type NotificationPayload =
+  | MemberJoinedPayload
+  | ExpenseLoggedPayload
+  | SettlementConfirmedPayload;
+
+/**
+ * Denormalized activity alert.
+ * Dynamo key shape (when Dynamo is used): NOTIFICATION#userId#createdAt#id
+ * with GSI on userId + createdAt (desc).
+ */
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  tripId: string;
+  tripName: string;
+  actorId: string;
+  actorName: string;
+  actorAvatarUrl?: string;
+  payload: NotificationPayload;
+  read: boolean;
+  createdAt: string;
+}

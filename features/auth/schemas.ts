@@ -16,5 +16,14 @@ export const onboardingSchema = z.object({
     .refine(isValidCurrencyCode, "Select a valid currency code"),
 });
 
+export const displayNameSchema = z.object({
+  displayName: z
+    .string()
+    .trim()
+    .min(2, "Enter a display name with at least 2 characters")
+    .max(50, "Display name can't be longer than 50 characters"),
+});
+
 export type EmailAuthFormData = z.infer<typeof emailAuthSchema>;
 export type OnboardingFormData = z.infer<typeof onboardingSchema>;
+export type DisplayNameFormData = z.infer<typeof displayNameSchema>;

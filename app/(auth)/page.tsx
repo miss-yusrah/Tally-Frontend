@@ -2,12 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  EmailAuthSheet,
-  GoogleIcon,
-  HeroMotion,
-  AmbientCurrencyGlyphs,
-} from "@/features/auth";
+import { EmailAuthSheet, GoogleIcon, HeroMotion } from "@/features/auth";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { useOpenBottomSheet, useCloseBottomSheet } from "@/store";
 import { cn } from "@/lib/utils";
@@ -71,24 +66,14 @@ function LandingContent() {
 
   return (
     <div className="relative min-h-dvh bg-[#0A0A0F]">
-      <div
-        className="pointer-events-none absolute left-1/2 top-[120px] h-[280px] w-[280px] -translate-x-1/2 rounded-full animate-ambient-drift"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(124, 58, 237, 0.18) 0%, transparent 70%)",
-        }}
-        aria-hidden
-      />
-
-      <AmbientCurrencyGlyphs />
-
+      {/* Same bottom-pinned footer layout as before; redesign visuals stay */}
       <div className="relative z-10 mx-auto grid min-h-dvh max-w-[430px] grid-rows-[auto_1fr_auto] safe-top safe-bottom">
         <header className="px-6 pt-[80px]">
           <h1 className="text-[40px] font-bold leading-none tracking-[-0.02em] text-[#F8F8FF]">
             Tally
           </h1>
-          <p className="mt-2 text-[17px] font-medium text-[#94A3B8]">
-            Split smarter. Settle faster.
+          <p className="mt-1 text-[17px] font-medium text-[#94A3B8]">
+            Split expenses. Stay friends.
           </p>
         </header>
 
@@ -106,13 +91,12 @@ function LandingContent() {
             </p>
           )}
           <div className="flex flex-col gap-3">
-            {/* Continue with Google — opens the device's Google account chooser */}
             <button
               type="button"
               onClick={handleGoogleSignIn}
               disabled={googleLoading}
               className={cn(
-                "relative flex h-[52px] w-full items-center justify-center rounded-[12px] bg-[#F8F8FF]",
+                "relative flex h-[52px] w-full items-center justify-center rounded-[12px] bg-[#E8E8F0]",
                 "text-[15px] font-semibold text-[#0A0A0F]",
                 "transition-transform duration-fast ease-tally active:scale-[0.98]",
                 "disabled:opacity-70",
@@ -129,13 +113,12 @@ function LandingContent() {
               )}
             </button>
 
-            {/* Continue with email — enter a specific email, get a magic link */}
             <button
               type="button"
               onClick={handleEmailOpen}
               className={cn(
                 "flex h-[52px] w-full items-center justify-center rounded-[12px]",
-                "border border-[#ffffff0f] bg-transparent",
+                "border border-[#ffffff1a] bg-transparent",
                 "text-[15px] font-semibold text-[#F8F8FF]",
                 "transition-all duration-fast ease-tally active:scale-[0.98]",
                 "hover:bg-[#ffffff08]",

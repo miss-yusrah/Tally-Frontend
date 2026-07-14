@@ -5,6 +5,7 @@ import {
   fetchMembersForTrip,
   seedMemoryMember,
 } from "@/lib/db/members";
+import { emitMemberJoinedNotifications } from "@/lib/notifications/emit";
 
 interface TripRow {
   id: string;
@@ -151,6 +152,21 @@ export async function joinTripViaToken(
   }
 
   const members = await fetchMembersForTrip(trip.id);
+
+  if (!alreadyMember) {
+    // Notify every other existing member (not the joiner). Non-blocking.
+    emitMemberJoinedNotifications({
+      tripId: trip.id,
+      tripName: trip.name,
+      joiner: {
+        userId: user.id,
+        displayName,
+        avatarUrl: user.avatarUrl,
+      },
+      members,
+    });
+  }
+
   return {
     ok: true,
     trip,

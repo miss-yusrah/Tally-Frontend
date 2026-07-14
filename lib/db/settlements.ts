@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { emitSettlementConfirmedNotifications } from "@/lib/notifications/emit";
 import { generateId } from "@/lib/utils";
 import type { Settlement } from "@/types";
 
@@ -84,9 +85,19 @@ export function buildSettlementRecord(params: {
 /**
  * Atomic insert — duplicate idempotency_token fails at the DB (unique constraint),
  * which we treat as a successful no-op for double-tap races.
+ *
+ * Settlement recipient notification is a non-blocking side effect when `notify` is set.
  */
 export async function persistSettlement(
-  settlement: Settlement
+  settlement: Settlement,
+  notify?: {
+    tripName: string;
+    actor: {
+      userId: string;
+      displayName: string;
+      avatarUrl?: string;
+    };
+  }
 ): Promise<Settlement> {
   const supabase = createClient();
 
@@ -117,6 +128,15 @@ export async function persistSettlement(
 
   const saved = mapSettlementRow(data as SettlementRow);
   memoryUpsert(saved);
+
+  if (notify) {
+    emitSettlementConfirmedNotifications({
+      settlement: saved,
+      tripName: notify.tripName,
+      actor: notify.actor,
+    });
+  }
+
   return saved;
 }
 

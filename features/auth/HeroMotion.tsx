@@ -39,13 +39,17 @@ function AvatarImg({ src, alt }: { src: string; alt: string }) {
 export function HeroMotion() {
   return (
     <div className="relative flex h-[200px] w-full items-center justify-center">
-      {/* Faint ring behind cluster */}
+      {/* Soft glow — anchored to the avatar cluster, not the viewport */}
       <div
-        className="pointer-events-none absolute h-[172px] w-[172px] rounded-full border border-[#ffffff0a]"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(124, 58, 237, 0.18) 0%, transparent 70%)",
+        }}
         aria-hidden
       />
 
-      {/* Cluster — fixed width, centered as one unit */}
+      {/* Cluster — floats freely, no enclosing ring */}
       <div className="relative h-[88px] w-[232px]">
         {/* Left */}
         <div
@@ -71,7 +75,7 @@ export function HeroMotion() {
           >
             <AvatarImg src={AVATARS.center.src} alt="Trip member" />
             <div
-              className="hero-checkmark-badge absolute flex h-7 w-7 items-center justify-center rounded-full bg-[#10B981] border-[3px] border-[#0A0A0F]"
+              className="hero-checkmark-badge absolute flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-[#0A0A0F] bg-[#10B981]"
               style={{ bottom: -8, right: -8 }}
               aria-hidden
             >
@@ -94,30 +98,5 @@ export function HeroMotion() {
         </div>
       </div>
     </div>
-  );
-}
-
-export function AmbientCurrencyGlyphs() {
-  return (
-    <>
-      <span
-        className="pointer-events-none absolute right-6 top-[28%] text-[22px] font-normal text-[#10B981]/25 hero-currency-drift-a select-none"
-        aria-hidden
-      >
-        $
-      </span>
-      <span
-        className="pointer-events-none absolute left-4 top-[52%] text-[20px] font-normal text-[#7C3AED]/30 hero-currency-drift-b select-none"
-        aria-hidden
-      >
-        £
-      </span>
-      <span
-        className="pointer-events-none absolute right-10 top-[58%] text-[18px] font-normal text-[#475569]/40 hero-currency-drift-c select-none"
-        aria-hidden
-      >
-        €
-      </span>
-    </>
   );
 }

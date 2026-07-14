@@ -475,6 +475,28 @@
   }
 }
 
+/* Notifications feed — staggered card entrance */
+@keyframes notification-item-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-notification-item-enter {
+  animation: notification-item-enter 280ms var(--ease-tally) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-notification-item-enter {
+    animation: none !important;
+  }
+}
+
 @keyframes settlement-row-enter {
   from {
     max-height: 0;

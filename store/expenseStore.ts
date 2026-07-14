@@ -7,6 +7,7 @@ import {
   persistExpense,
 } from "@/lib/db/expenses";
 import { generateId } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
 import { useBalanceStore } from "@/store/balanceStore";
 import { useTripStore } from "@/store/tripStore";
 import { useUIStore } from "@/store/uiStore";
@@ -154,10 +155,39 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
 
     void (async () => {
       try {
-        const saved = await persistExpense({
-          ...optimistic,
-          _optimistic: false,
-        });
+        const tripState = useTripStore.getState();
+        const trip =
+          tripState.activeTrip?.id === tripId
+            ? tripState.activeTrip
+            : tripState.trips.find((t) => t.id === tripId);
+        const membersFromTrip =
+          tripState.activeTrip?.id === tripId ? tripState.members : [];
+        const members =
+          useBalanceStore.getState().membersByTrip[tripId] ??
+          membersFromTrip;
+        const authUser = useAuthStore.getState().user;
+        const actorMember = members.find((m) => m.userId === options.createdBy);
+
+        const saved = await persistExpense(
+          {
+            ...optimistic,
+            _optimistic: false,
+          },
+          trip && authUser
+            ? {
+                tripName: trip.name,
+                members,
+                actor: {
+                  userId: options.createdBy,
+                  displayName:
+                    actorMember?.displayName ||
+                    authUser.displayName ||
+                    authUser.email,
+                  avatarUrl: actorMember?.avatarUrl ?? authUser.avatarUrl,
+                },
+              }
+            : undefined
+        );
 
         set((state) => ({
           isAddingExpense: false,

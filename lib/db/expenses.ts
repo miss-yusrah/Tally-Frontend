@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { emitExpenseLoggedNotifications } from "@/lib/notifications/emit";
 import { toDecimalString } from "@/lib/fx-math";
 import { generateId } from "@/lib/utils";
 import type {
@@ -6,6 +7,7 @@ import type {
   ExpenseCategory,
   ExpenseSplit,
   FxRateSource,
+  TripMember,
 } from "@/types";
 
 interface ExpenseRow {
@@ -127,7 +129,22 @@ export function buildExpenseRecord(params: {
   };
 }
 
-export async function persistExpense(expense: Expense): Promise<Expense> {
+/**
+ * Persist expense then emit member notifications as a non-blocking side effect.
+ * Pass trip/actor context when available so alerts can be denormalized at write time.
+ */
+export async function persistExpense(
+  expense: Expense,
+  notify?: {
+    tripName: string;
+    members: TripMember[];
+    actor: {
+      userId: string;
+      displayName: string;
+      avatarUrl?: string;
+    };
+  }
+): Promise<Expense> {
   const supabase = createClient();
 
   const { data, error } = await supabase
@@ -164,6 +181,16 @@ export async function persistExpense(expense: Expense): Promise<Expense> {
 
   const saved = mapExpenseRow(data as ExpenseRow);
   memoryUpsert(saved);
+
+  if (notify) {
+    emitExpenseLoggedNotifications({
+      expense: saved,
+      tripName: notify.tripName,
+      members: notify.members,
+      actor: notify.actor,
+    });
+  }
+
   return saved;
 }
 

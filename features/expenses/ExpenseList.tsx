@@ -66,15 +66,15 @@ export function ExpenseList({
           No expenses logged yet
         </p>
         <p className="mt-1 text-[13px] font-normal text-[#475569]">
-          Tap + to add the first one
+          Tap + Add to log the first one
         </p>
       </div>
     );
   }
 
   return (
-    <div className="mx-6">
-      {sorted.map((expense, index) => (
+    <div className="flex flex-col gap-2.5">
+      {sorted.map((expense) => (
         <ExpenseRow
           key={expense.id}
           expense={expense}
@@ -82,7 +82,6 @@ export function ExpenseList({
           payerName={memberName(expense.payerId)}
           baseCurrency={baseCurrency}
           isEntering={enteringIds.has(expense.id)}
-          showDivider={index < sorted.length - 1}
         />
       ))}
     </div>

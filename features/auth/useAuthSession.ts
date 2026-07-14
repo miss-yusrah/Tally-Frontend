@@ -5,6 +5,21 @@ import { useRouter } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { mapSupabaseUser } from "@/lib/supabase/profile";
 import { useAuthStore } from "@/store/authStore";
+import { useBalanceStore } from "@/store/balanceStore";
+import { useExpenseStore } from "@/store/expenseStore";
+import { useNotificationStore } from "@/store/notificationStore";
+import { useSettlementStore } from "@/store/settlementStore";
+import { useTripStore } from "@/store/tripStore";
+
+function clearAllAppStores() {
+  useAuthStore.getState().clearUser();
+  useTripStore.getState().clearTripState();
+  useTripStore.getState().clearPendingInvite();
+  useExpenseStore.getState().clearExpenses();
+  useBalanceStore.getState().clearBalanceState();
+  useSettlementStore.getState().clearSettlementState();
+  useNotificationStore.getState().clearNotificationState();
+}
 
 export function useAuthSession() {
   const router = useRouter();
@@ -40,12 +55,13 @@ export function useAuthSession() {
   }, [supabase, setUser, setStatus]);
 
   const signOut = useCallback(async () => {
-    if (!supabase) return;
-    await supabase.auth.signOut();
-    setUser(null);
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+    clearAllAppStores();
     router.refresh();
     router.push("/");
-  }, [supabase, setUser, router]);
+  }, [supabase, router]);
 
   return {
     user,

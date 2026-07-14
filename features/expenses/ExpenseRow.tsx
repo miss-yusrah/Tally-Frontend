@@ -28,11 +28,12 @@ function CategorySwatch({ category }: { category: Expense["category"] }) {
 
   return (
     <div
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]"
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px]"
       style={{ backgroundColor: `${config.color}26` }}
+      aria-hidden
     >
       <Icon
-        className="h-[18px] w-[18px]"
+        className="h-5 w-5"
         style={{ color: config.color }}
         strokeWidth={2}
       />
@@ -40,11 +41,6 @@ function CategorySwatch({ category }: { category: Expense["category"] }) {
   );
 }
 
-/**
- * Deliberately quiet cached-rate marker (per "avoid cluttering the main
- * list"): a 12px clock in the same muted tone as the text beside it, with a
- * 24x24px touch target. Tapping explains the rate via the global info toast.
- */
 function CachedRateIndicator() {
   const addToast = useAddToast();
 
@@ -53,7 +49,6 @@ function CachedRateIndicator() {
       type="button"
       aria-label="Converted using a cached exchange rate"
       onClick={(e) => {
-        // The whole row is a link — keep the tap scoped to the icon.
         e.preventDefault();
         e.stopPropagation();
         addToast({
@@ -62,8 +57,6 @@ function CachedRateIndicator() {
         });
       }}
       className={cn(
-        // 24x24 touch target around a 12px glyph; negative margins collapse
-        // the padding so the visible gap to the amount text stays 4px.
         "-my-1.5 -ml-1.5 -mr-1.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C3AED]"
       )}
@@ -79,7 +72,6 @@ export function ExpenseRow({
   payerName,
   baseCurrency,
   isEntering = false,
-  showDivider = true,
 }: ExpenseRowProps) {
   const title = expense.note?.trim() || expense.merchant?.trim() || "Expense";
   const payerLabel = payerName.split(" ")[0] || payerName;
@@ -87,54 +79,50 @@ export function ExpenseRow({
   const usedCachedRate = expense.rateSource === "cached";
 
   return (
-    <div
+    <Link
+      href={`/trips/${tripId}/expenses/${expense.id}`}
       className={cn(
-        isEntering && "animate-expense-row-enter",
-        showDivider && "border-b border-[#ffffff0f]"
+        "flex items-start gap-3 rounded-[16px] border border-[#ffffff18] bg-[#15151E] p-4",
+        "shadow-[inset_0_1px_0_#ffffff0c,0_1px_0_#ffffff06]",
+        "transition-all duration-fast ease-tally",
+        "hover:bg-[#1C1C27] active:scale-[0.985] active:bg-[#1C1C27]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C3AED] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0A0F]",
+        isEntering && "animate-expense-row-enter"
       )}
     >
-      <Link
-        href={`/trips/${tripId}/expenses/${expense.id}`}
-        className={cn(
-          "flex h-[72px] items-center gap-3",
-          "transition-colors duration-fast ease-tally active:bg-[#ffffff05]",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C3AED] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0A0F]"
+      <CategorySwatch category={expense.category} />
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[15px] font-semibold text-[#F8F8FF]">
+          {title}
+        </p>
+        <p
+          className="mt-0.5 text-[13px] font-normal text-[#94A3B8] tabular-nums"
+          style={{ fontFeatureSettings: '"tnum"' }}
+        >
+          {payerLabel} paid · {formatRelativeTime(expense.createdAt)}
+        </p>
+      </div>
+
+      <div className="shrink-0 text-right">
+        <p
+          className="text-[16px] font-bold text-[#F8F8FF] tabular-nums"
+          style={{ fontFeatureSettings: '"tnum"' }}
+        >
+          {formatCurrency(expense.amountMinorUnits, expense.currency)}
+        </p>
+        {showBaseConversion && (
+          <div className="mt-0.5 flex items-center justify-end gap-1">
+            {usedCachedRate && <CachedRateIndicator />}
+            <p
+              className="text-[12px] font-normal text-[#94A3B8] tabular-nums"
+              style={{ fontFeatureSettings: '"tnum"' }}
+            >
+              ({formatCurrency(expense.baseCurrencyAmount, baseCurrency)})
+            </p>
+          </div>
         )}
-      >
-        <CategorySwatch category={expense.category} />
-
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-medium text-[#F8F8FF]">
-            {title}
-          </p>
-          <p
-            className="mt-0.5 text-[13px] font-normal text-[#94A3B8] tabular-nums"
-            style={{ fontFeatureSettings: '"tnum"' }}
-          >
-            {payerLabel} paid · {formatRelativeTime(expense.createdAt)}
-          </p>
-        </div>
-
-        <div className="shrink-0 text-right">
-          <p
-            className="text-[16px] font-semibold text-[#F8F8FF] tabular-nums"
-            style={{ fontFeatureSettings: '"tnum"' }}
-          >
-            {formatCurrency(expense.amountMinorUnits, expense.currency)}
-          </p>
-          {showBaseConversion && (
-            <div className="mt-0.5 flex items-center justify-end gap-1">
-              {usedCachedRate && <CachedRateIndicator />}
-              <p
-                className="text-[12px] font-normal text-[#94A3B8] tabular-nums"
-                style={{ fontFeatureSettings: '"tnum"' }}
-              >
-                ({formatCurrency(expense.baseCurrencyAmount, baseCurrency)})
-              </p>
-            </div>
-          )}
-        </div>
-      </Link>
-    </div>
+      </div>
+    </Link>
   );
 }
