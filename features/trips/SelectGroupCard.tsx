@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import type { SelectGroupView } from "./mockSelectGroups";
+import Image from "next/image";
 
 const focusRing =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5921B5] focus-visible:ring-offset-2 focus-visible:ring-offset-white";
@@ -33,11 +34,12 @@ export function SelectGroupCard({ group, onSelect }: SelectGroupCardProps) {
       )}
       aria-label={`${group.name}, ${friendLabel}, ${tripLabel}`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={group.coverSrc}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        fill
+        sizes="100vw"
+        className="object-cover object-center"
       />
       <div
         className="absolute inset-0 bg-gradient-to-t from-[#15131A]/75 via-[#15131A]/25 to-transparent"

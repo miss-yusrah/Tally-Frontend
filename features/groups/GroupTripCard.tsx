@@ -5,6 +5,7 @@ import { GROUP_DETAIL_ICONS } from "./groupDetailStyles";
 import { formatFigmaTripCardDate } from "./tripDateFormat";
 import type { GroupTripView } from "./mockGroupFriendsData";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const focusRing =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5921B5] focus-visible:ring-offset-2 focus-visible:ring-offset-white";
@@ -24,11 +25,12 @@ export function GroupTripCard({ trip, href }: GroupTripCardProps) {
 
   const body = (
     <>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={trip.coverSrc}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        fill
+        sizes="100vw"
+        className="object-cover object-center"
       />
       <div
         className="absolute inset-0 bg-gradient-to-t from-[#15131A]/80 via-[#15131A]/25 to-transparent"

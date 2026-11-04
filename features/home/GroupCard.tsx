@@ -7,6 +7,7 @@ import {
   figmaUserAvatarAt,
 } from "./figmaUserAvatars";
 import type { Trip, TripMember } from "@/types";
+import Image from "next/image";
 
 /** Figma home group card fallback when a group has no custom cover. */
 const DEFAULT_COVER_SRC = "/tabr/home/images/group-cover.webp";
@@ -73,11 +74,12 @@ export function GroupCard({
         focusRing
       )}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={coverSrc}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        fill
+        sizes="100vw"
+        className="object-cover object-center"
       />
       <div
         className="absolute inset-0 bg-gradient-to-t from-[#15131A]/70 via-[#15131A]/25 to-transparent"

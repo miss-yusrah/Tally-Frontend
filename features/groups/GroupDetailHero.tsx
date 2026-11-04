@@ -7,6 +7,7 @@ import { FIGMA_HERO_AVATAR_CLUSTER } from "@/features/home/figmaUserAvatars";
 import { GROUP_HERO_COVER } from "./mockGroupFriendsData";
 import { groupDetailHeroFocusRing } from "./groupDetailStyles";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface GroupDetailHeroProps {
   groupName: string;
@@ -41,10 +42,12 @@ export function GroupDetailHero({
     <>
       <div className="absolute inset-0 z-0 overflow-hidden bg-[var(--new-bg,#FAFAFA)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={GROUP_HERO_COVER}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          fill
+          sizes="100vw"
+          className="object-cover object-center"
         />
         <div
           className={cn(

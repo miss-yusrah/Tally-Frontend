@@ -14,9 +14,13 @@ const SWIPE_THRESHOLD_PX = 48;
 function SlideBackground({
   slide,
   isActive,
+  isFirst,
 }: {
   slide: OnboardingSlide;
   isActive: boolean;
+  /** Only the first slide is a real LCP candidate — later slides load lazily
+   * and are warmed during the 500ms cross-fade window. */
+  isFirst: boolean;
 }) {
   return (
     <div
@@ -30,7 +34,8 @@ function SlideBackground({
         src={slide.backgroundSrc}
         alt=""
         fill
-        priority
+        priority={isFirst}
+        loading={isFirst ? "eager" : "lazy"}
         sizes="100vw"
         className="object-cover"
         style={{ objectPosition: slide.imagePosition ?? "50% 40%" }}
@@ -182,11 +187,12 @@ export function OnboardingCarousel() {
     >
       {/* Backgrounds — crossfade; no fake status bar / home indicator */}
       <div className="absolute inset-0">
-        {ONBOARDING_SLIDES.map((slide) => (
+        {ONBOARDING_SLIDES.map((slide, index) => (
           <SlideBackground
             key={slide.id}
             slide={slide}
             isActive={slide.id === activeSlide}
+            isFirst={index === 0}
           />
         ))}
       </div>

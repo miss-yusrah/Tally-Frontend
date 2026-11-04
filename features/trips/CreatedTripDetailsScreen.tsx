@@ -18,6 +18,7 @@ import type { CreatedTripDraft } from "@/store/createdTripDraftStore";
 import { getPreviewOutingDraft } from "@/features/groups/mockGroupFriendsData";
 import { TripCreatedOverlay } from "./TripCreatedOverlay";
 import { PlaceMapPreview } from "./PlaceMapPreview";
+import Image from "next/image";
 import {
   formatOutingTime,
   formatOutingWeekdayDate,
@@ -121,11 +122,12 @@ export function CreatedTripDetailsScreen({
         <div className="mt-5 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-4">
           {/* Place hero card */}
           <article className="relative w-full overflow-hidden rounded-[20px] aspect-[358/220]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={draft.imageSrc}
               alt=""
-              className="absolute inset-0 h-full w-full object-cover"
+              fill
+              sizes="100vw"
+              className="object-cover"
             />
             <div
               className="absolute inset-0 bg-gradient-to-t from-[#15131A]/75 via-[#15131A]/20 to-transparent"

@@ -26,16 +26,18 @@ function clearAllAppStores() {
 
 export function useAuthSession() {
   const router = useRouter();
-  const setUser = useAuthStore((s) => s.setUser);
-  const setStatus = useAuthStore((s) => s.setStatus);
   const storeStatus = useAuthStore((s) => s.status);
   const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
-    setStatus("loading");
-    const mockUser = readMockUser();
-    setUser(mockUser);
-  }, [setUser, setStatus]);
+    // Hydrate the session once per app session. Screens calling this hook on
+    // every mount (13 call sites) act as no-ops afterwards, so the user object
+    // identity stays stable and data effects don't re-fire on navigation.
+    const state = useAuthStore.getState();
+    if (state.status !== "idle" || state.user) return;
+    state.setStatus("loading");
+    state.setUser(readMockUser());
+  }, []);
 
   const signOut = async () => {
     mockSignOut();

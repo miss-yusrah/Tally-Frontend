@@ -4,6 +4,7 @@ import { Star } from "lucide-react";
 import { GROUP_DETAIL_ICONS } from "@/features/groups/groupDetailStyles";
 import { cn } from "@/lib/utils";
 import type { ExploreDestination } from "./mockExploreDestinations";
+import Image from "next/image";
 
 const focusRing =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5921B5] focus-visible:ring-offset-2 focus-visible:ring-offset-white";
@@ -35,11 +36,12 @@ export function ExploreDestinationCard({
       )}
       aria-label={`${destination.name}, ${location}, ${meta}`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={destination.imageSrc}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover"
+        fill
+        sizes="100vw"
+        className="object-cover"
       />
       <div
         className="absolute inset-0 bg-gradient-to-t from-[#15131A]/75 via-[#15131A]/25 to-transparent"

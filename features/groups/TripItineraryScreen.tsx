@@ -15,6 +15,7 @@ import { GROUP_HERO_COVER } from "./mockGroupFriendsData";
 import type { GroupEventView, GroupTripView } from "./mockGroupFriendsData";
 import { formatFigmaTripDates } from "./tripDateFormat";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface TripItineraryScreenProps {
   trip: GroupTripView;
@@ -41,10 +42,12 @@ export function TripItineraryScreen({ trip, events }: TripItineraryScreenProps) 
       >
         <div className="relative h-[clamp(280px,44vh,380px)] min-h-[260px] w-full overflow-hidden sm:min-h-[320px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={GROUP_HERO_COVER}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            fill
+            sizes="100vw"
+            className="object-cover object-center"
           />
           <div
             className="absolute inset-0 bg-gradient-to-b from-[#15131A]/35 via-[#15131A]/5 to-[#15131A]/70"

@@ -8,6 +8,7 @@ import { HomeProfileAvatarLink } from "@/features/home";
 import { GROUP_DETAIL_ICONS } from "@/features/groups/groupDetailStyles";
 import { useAddToast } from "@/store";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import {
   getExploreDestinationDetailImage,
   type ExploreDestination,
@@ -79,11 +80,13 @@ export function LocationDetailsScreen({
 
   return (
     <div className="relative flex min-h-dvh w-full flex-col overflow-x-clip bg-[#15131A]">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={heroSrc}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center"
       />
       <div
         className="absolute inset-0 bg-gradient-to-b from-[#15131A]/45 via-[#15131A]/25 to-[#15131A]/85"
