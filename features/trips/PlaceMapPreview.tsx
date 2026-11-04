@@ -15,13 +15,24 @@ export const MOCK_PLACE_MAP = {
   },
 } as const;
 
-export function getPlaceMapEmbedUrl(coords = MOCK_PLACE_MAP): string {
+interface PlaceCoords {
+  lat: number;
+  lng: number;
+  bbox: {
+    minLng: number;
+    minLat: number;
+    maxLng: number;
+    maxLat: number;
+  };
+}
+
+export function getPlaceMapEmbedUrl(coords: PlaceCoords = MOCK_PLACE_MAP): string {
   const { minLng, minLat, maxLng, maxLat } = coords.bbox;
   const { lat, lng } = coords;
   return `https://www.openstreetmap.org/export/embed.html?bbox=${minLng}%2C${minLat}%2C${maxLng}%2C${maxLat}&layer=mapnik&marker=${lat}%2C${lng}`;
 }
 
-export function getPlaceMapOpenUrl(coords = MOCK_PLACE_MAP): string {
+export function getPlaceMapOpenUrl(coords: PlaceCoords = MOCK_PLACE_MAP): string {
   return `https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lng}#map=15/${coords.lat}/${coords.lng}`;
 }
 
