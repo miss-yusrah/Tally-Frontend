@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown } from "lucide-react";
 import {
   AuthBackButton,
@@ -16,7 +15,8 @@ import {
 } from "@/features/auth";
 import { HomeProfileAvatarLink } from "@/features/home";
 import { OnboardingCurrencyPicker } from "@/features/onboarding";
-import { createTripSchema, type CreateTripFormData } from "@/features/trips/schemas";
+import { type CreateTripFormData } from "@/features/trips/schemas";
+import { lazyZodResolver } from "@/lib/forms/lazyZodResolver";
 import { getCurrencyByCode } from "@/lib/currency";
 import { useAddToast, useCreateGroupDraftStore } from "@/store";
 import { cn } from "@/lib/utils";
@@ -51,7 +51,9 @@ export function CreateGroupForm() {
     setValue,
     formState: { errors, isValid },
   } = useForm<CreateTripFormData>({
-    resolver: zodResolver(createTripSchema),
+    resolver: lazyZodResolver<CreateTripFormData>(
+      () => import("@/features/trips/schemas").then((m) => m.createTripSchema)
+    ),
     mode: "onChange",
     defaultValues: {
       name: "",

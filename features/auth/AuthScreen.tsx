@@ -96,7 +96,7 @@ export function AuthLogo() {
   return (
     <div className={authLogoWrapClass}>
       <Image
-        src="/tabr/brand/logo.png"
+        src="/tabr/brand/logo.webp"
         alt="Tabr"
         width={84}
         height={84}

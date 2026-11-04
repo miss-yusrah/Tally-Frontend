@@ -10,6 +10,16 @@ import type { LocaleCode, MessageTree } from "@/lib/i18n/types";
 
 const STORAGE_KEY = "tabr.locale";
 
+/**
+ * Non-English catalogs are code-split — fetch on demand and cache in the chunk.
+ * English resolves immediately; unknown locales resolve to null (keep current).
+ */
+function loadLocaleMessages(locale: LocaleCode): Promise<MessageTree | null> {
+  return import("@/lib/i18n/asyncCatalogs").then(
+    (m) => m.loadLocaleMessages(locale)
+  );
+}
+
 function readStoredLocale(): LocaleCode {
   if (typeof window === "undefined") return DEFAULT_LOCALE;
   try {
@@ -57,12 +67,31 @@ export const useLocaleStore = create<LocaleState>((set, get) => ({
       messages: getMessages(locale),
       hydrated: true,
     });
+    if (locale !== DEFAULT_LOCALE) {
+      loadLocaleMessages(locale)
+        .then((tree) => {
+          // Ignore stale loads if the user switched locale meanwhile.
+          if (tree && get().locale === locale) set({ messages: tree });
+        })
+        .catch(() => {
+          /* keep English fallback */
+        });
+    }
   },
 
   setLocale: (locale) => {
     persistLocale(locale);
     applyDocumentLocale(locale);
     set({ locale, messages: getMessages(locale) });
+    if (locale !== DEFAULT_LOCALE) {
+      loadLocaleMessages(locale)
+        .then((tree) => {
+          if (tree && get().locale === locale) set({ messages: tree });
+        })
+        .catch(() => {
+          /* keep English fallback */
+        });
+    }
   },
 
   syncFromUserLanguage: (language) => {

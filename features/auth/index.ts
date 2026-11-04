@@ -1,13 +1,4 @@
 export { CurrencyPickerSheet } from "./CurrencyPickerSheet";
-export {
-  emailAuthSchema,
-  signUpSchema,
-  signInSchema,
-  otpSchema,
-  resetPasswordSchema,
-  onboardingSchema,
-  displayNameSchema,
-} from "./schemas";
 export type {
   EmailAuthFormData,
   SignUpFormData,

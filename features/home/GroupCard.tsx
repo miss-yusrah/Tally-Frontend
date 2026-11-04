@@ -9,7 +9,7 @@ import {
 import type { Trip, TripMember } from "@/types";
 
 /** Figma home group card fallback when a group has no custom cover. */
-const DEFAULT_COVER_SRC = "/tabr/home/images/group-cover.png";
+const DEFAULT_COVER_SRC = "/tabr/home/images/group-cover.webp";
 
 const focusRing =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5921B5] focus-visible:ring-offset-2 focus-visible:ring-offset-white";

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { GeistSans, bricolage, playfair } from "@/lib/fonts";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AppProviders } from "@/components/providers/AppProviders";
+import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -55,6 +57,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AppProviders>{children}</AppProviders>
         </ThemeProvider>
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );

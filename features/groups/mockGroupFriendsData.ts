@@ -44,10 +44,10 @@ const PREVIEW_GROUP_DETAIL_TRIP_COUNTS: Record<string, number> = {
 
 /** Friends-list row photos — public/tabr/home/images/users/ */
 export const MEMBER_AVATARS = {
-  aniekan: "/tabr/home/images/users/Ellipse%2058.png",
-  mark: "/tabr/home/images/users/Ellipse%2058%20(1).png",
-  daniel: "/tabr/home/images/users/Ellipse%2058%20(2).png",
-  ruth: "/tabr/home/images/users/Ellipse%2058%20(3).png",
+  aniekan: "/tabr/home/images/users/Ellipse%2058.webp",
+  mark: "/tabr/home/images/users/Ellipse%2058%20(1).webp",
+  daniel: "/tabr/home/images/users/Ellipse%2058%20(2).webp",
+  ruth: "/tabr/home/images/users/Ellipse%2058%20(3).webp",
 } as const;
 
 /** Figma-accurate members for preview group detail (My Day Ones). */
@@ -145,7 +145,7 @@ export const PREVIEW_GROUP_FRIENDS_MEMBERS: GroupMemberView[] = [
 /** Hero avatar stack — public/tabr/home/avatars. */
 export const HERO_AVATAR_CLUSTER = FIGMA_HERO_AVATAR_CLUSTER;
 
-export const GROUP_HERO_COVER = "/tabr/home/images/friends2.png";
+export const GROUP_HERO_COVER = "/tabr/home/images/friends2.webp";
 
 export function isPreviewGroupTripId(tripId: string): boolean {
   return tripId.startsWith("preview-");
@@ -188,10 +188,10 @@ function emailFromDisplayName(name: string): string {
   return `${slug || "member"}@quietly.com`;
 }
 
-const GROUP_TRIP_COVER = "/tabr/home/images/painting.png";
+const GROUP_TRIP_COVER = "/tabr/home/images/painting.webp";
 const TRIP_CARD = (n: 1 | 2 | 3 | 4 | 5) =>
-  `/tabr/Trip cards/Trip card ${n}.png`;
-const TRIP_LOCATION = "/tabr/Trip cards/trip location.png";
+  `/tabr/Trip cards/Trip card ${n}.webp`;
+const TRIP_LOCATION = "/tabr/Trip cards/trip location.webp";
 
 export interface GroupEventView {
   id: string;

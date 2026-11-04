@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, Clock } from "lucide-react";
 import {
   AuthBackButton,
@@ -23,10 +22,8 @@ import {
   useTrips,
 } from "@/store";
 import { cn } from "@/lib/utils";
-import {
-  customiseTripSchema,
-  type CustomiseTripFormData,
-} from "./schemas";
+import { type CustomiseTripFormData } from "./schemas";
+import { lazyZodResolver } from "@/lib/forms/lazyZodResolver";
 import {
   getExploreDestinationById,
   getExploreDestinationDetailImage,
@@ -177,7 +174,9 @@ export function CustomiseTripScreen({
     setValue,
     formState: { errors, isValid },
   } = useForm<CustomiseTripFormData>({
-    resolver: zodResolver(customiseTripSchema),
+    resolver: lazyZodResolver<CustomiseTripFormData>(
+      () => import("./schemas").then((m) => m.customiseTripSchema)
+    ),
     mode: "onChange",
     defaultValues: {
       name: defaultTripName(place?.name ?? "Trip"),
@@ -220,7 +219,7 @@ export function CustomiseTripScreen({
     const outingId = `outing-${Date.now()}`;
     const placeImage = place
       ? getExploreDestinationDetailImage(place)
-      : "/tabr/Trip cards/trip location.png";
+      : "/tabr/Trip cards/trip location.webp";
 
     setDraft({
       id: outingId,

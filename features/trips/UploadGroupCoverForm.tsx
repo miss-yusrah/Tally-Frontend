@@ -23,10 +23,10 @@ const focusRing =
 
 /** Figma preset covers the user can pick instead of uploading their own. */
 const PRESET_COVERS = [
-  { id: "preset-1", src: "/tabr/home/images/card images/card image 1.png" },
-  { id: "preset-2", src: "/tabr/home/images/card images/card image 2.png" },
-  { id: "preset-3", src: "/tabr/home/images/card images/card image 3.png" },
-  { id: "preset-4", src: "/tabr/home/images/card images/card image 4.png" },
+  { id: "preset-1", src: "/tabr/home/images/card images/card image 1.webp" },
+  { id: "preset-2", src: "/tabr/home/images/card images/card image 2.webp" },
+  { id: "preset-3", src: "/tabr/home/images/card images/card image 3.webp" },
+  { id: "preset-4", src: "/tabr/home/images/card images/card image 4.webp" },
 ] as const;
 
 /**

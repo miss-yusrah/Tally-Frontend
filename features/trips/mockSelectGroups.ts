@@ -20,7 +20,7 @@ export interface SelectGroupView {
 }
 
 const CARD = (n: 1 | 2 | 3 | 4) =>
-  `/tabr/home/images/card images/card image ${n}.png`;
+  `/tabr/home/images/card images/card image ${n}.webp`;
 
 function avatarStack(count: number, offset = 0): string[] {
   const size = Math.min(Math.max(count, 1), 5);

@@ -19,7 +19,7 @@ export {
   useResolvePendingInvite,
   PendingInviteResolver,
 } from "./useResolvePendingInvite";
-export { createTripSchema, customiseTripSchema, type CreateTripFormData, type CustomiseTripFormData } from "./schemas";
+export { type CreateTripFormData, type CustomiseTripFormData } from "./schemas";
 export { CreateGroupForm } from "./CreateGroupForm";
 export { UploadGroupCoverForm } from "./UploadGroupCoverForm";
 export { PrepareTripScreen } from "./PrepareTripScreen";

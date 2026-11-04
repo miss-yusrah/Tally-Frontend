@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AuthBody,
   AuthField,
@@ -19,7 +18,8 @@ import {
   AuthSwitchLink,
   AuthTerms,
 } from "./AuthScreen";
-import { signInSchema, type SignInFormData } from "./schemas";
+import { type SignInFormData } from "./schemas";
+import { lazyZodResolver } from "@/lib/forms/lazyZodResolver";
 import { authMutedClass } from "./authFormStyles";
 import { mockSignIn } from "@/lib/auth/mock-session";
 import { cn } from "@/lib/utils";
@@ -36,7 +36,9 @@ export function SignInForm() {
     handleSubmit,
     formState: { errors, isValid },
   } = useForm<SignInFormData>({
-    resolver: zodResolver(signInSchema),
+    resolver: lazyZodResolver<SignInFormData>(
+      () => import("./schemas").then((m) => m.signInSchema)
+    ),
     mode: "onChange",
     defaultValues: {
       email: "",

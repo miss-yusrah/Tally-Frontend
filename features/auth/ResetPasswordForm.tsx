@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
 import {
   AuthBackButton,
@@ -19,10 +18,8 @@ import {
   getResetPasswordRuleStatus,
   isResetPasswordValid,
 } from "./passwordRules";
-import {
-  resetPasswordSchema,
-  type ResetPasswordFormData,
-} from "./schemas";
+import { type ResetPasswordFormData } from "./schemas";
+import { lazyZodResolver } from "@/lib/forms/lazyZodResolver";
 import { cn } from "@/lib/utils";
 
 export function ResetPasswordForm() {
@@ -33,7 +30,9 @@ export function ResetPasswordForm() {
   const [submitting, setSubmitting] = useState(false);
 
   const { register, handleSubmit, watch } = useForm<ResetPasswordFormData>({
-    resolver: zodResolver(resetPasswordSchema),
+    resolver: lazyZodResolver<ResetPasswordFormData>(
+      () => import("./schemas").then((m) => m.resetPasswordSchema)
+    ),
     mode: "onChange",
     defaultValues: {
       password: "",

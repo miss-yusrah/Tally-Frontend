@@ -10,7 +10,7 @@ interface TabrLogoProps {
 export function TabrLogo({ className, title = "Tabr" }: TabrLogoProps) {
   return (
     <Image
-      src="/tabr/brand/tabr-logo.png"
+      src="/tabr/brand/tabr-logo.webp"
       alt={title}
       width={101}
       height={47}

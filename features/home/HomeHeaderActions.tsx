@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 const focusRing =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5921B5] focus-visible:ring-offset-2 focus-visible:ring-offset-white";
 
-const DEFAULT_AVATAR = "/tabr/home/avatars/21.png";
+const DEFAULT_AVATAR = "/tabr/home/avatars/21.webp";
 
 interface HomeNotificationsBellProps {
   unreadCount: number;
@@ -34,7 +34,7 @@ export function HomeNotificationsBell({
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/tabr/home/icons/bell.png"
+        src="/tabr/home/icons/bell.webp"
         alt=""
         width={24}
         height={24}

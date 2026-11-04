@@ -1,11 +1,10 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  displayNameSchema,
   type DisplayNameFormData,
 } from "@/features/auth";
+import { lazyZodResolver } from "@/lib/forms/lazyZodResolver";
 import {
   useAddToast,
   useAuthStore,
@@ -31,7 +30,9 @@ export function DisplayNameSheet({ currentName }: DisplayNameSheetProps) {
     handleSubmit,
     formState: { errors, isValid, isSubmitting },
   } = useForm<DisplayNameFormData>({
-    resolver: zodResolver(displayNameSchema),
+    resolver: lazyZodResolver<DisplayNameFormData>(
+      () => import("@/features/auth/schemas").then((m) => m.displayNameSchema)
+    ),
     mode: "onChange",
     defaultValues: { displayName: currentName },
   });

@@ -11,21 +11,21 @@ export interface OnboardingSlide {
 export const ONBOARDING_SLIDES: OnboardingSlide[] = [
   {
     id: 0,
-    backgroundSrc: "/tabr/onboarding/slide-1-bg.png",
+    backgroundSrc: "/tabr/onboarding/slide-1-bg.webp",
     headlineLines: ["Plan the vibe", "with your crew"],
     body: "Pick a place, set a date, and bring everyone into the plan",
     imagePosition: "50% 42%",
   },
   {
     id: 1,
-    backgroundSrc: "/tabr/onboarding/slide-2-bg.png",
+    backgroundSrc: "/tabr/onboarding/slide-2-bg.webp",
     headlineLines: ["Get everyone on", "the same page"],
     body: "Share ideas, vote on plans, and keep every detail in one place",
     imagePosition: "50% 38%",
   },
   {
     id: 2,
-    backgroundSrc: "/tabr/onboarding/slide-3-bg.png",
+    backgroundSrc: "/tabr/onboarding/slide-3-bg.webp",
     /** Figma: 224px heading-2 box — "Make the plan" / "happen" */
     headlineLines: ["Make the plan", "happen"],
     body: "Show up as a crew, have fun, and make memories together",

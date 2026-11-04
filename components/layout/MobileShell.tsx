@@ -2,7 +2,10 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { LightHomeNav, useLightHomeChrome } from "@/features/home";
+// Direct module imports — avoids pulling the whole home feature barrel
+// (NewUserHome, ExploreEntryScreen, mock data, …) into the shared layout chunk.
+import { LightHomeNav } from "@/features/home/LightHomeNav";
+import { useLightHomeChrome } from "@/features/home/useLightHomeChrome";
 import { cn } from "@/lib/utils";
 import { BottomNav } from "./BottomNav";
 

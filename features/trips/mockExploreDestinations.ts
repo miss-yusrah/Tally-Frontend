@@ -38,10 +38,10 @@ export const EXPLORE_CATEGORIES: ExploreCategory[] = [
 ];
 
 const CARD = (n: 1 | 2 | 3 | 4 | 5) =>
-  `/tabr/Trip cards/Trip card ${n}.png`;
+  `/tabr/Trip cards/Trip card ${n}.webp`;
 
-/** Figma location-details hero — public/tabr/Trip cards/trip location.png */
-const DETAIL_HERO = "/tabr/Trip cards/trip location.png";
+/** Figma location-details hero — public/tabr/Trip cards/trip location.webp */
+const DETAIL_HERO = "/tabr/Trip cards/trip location.webp";
 
 /** Figma “Let's prepare your trip” list — swap for API results later. */
 export const MOCK_EXPLORE_DESTINATIONS: ExploreDestination[] = [

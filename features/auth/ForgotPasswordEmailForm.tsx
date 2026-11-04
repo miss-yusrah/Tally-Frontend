@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AuthBackButton,
   AuthBody,
@@ -14,7 +13,8 @@ import {
   AuthStackHeader,
   AuthStackScreen,
 } from "./AuthScreen";
-import { emailAuthSchema, type EmailAuthFormData } from "./schemas";
+import { type EmailAuthFormData } from "./schemas";
+import { lazyZodResolver } from "@/lib/forms/lazyZodResolver";
 
 export function ForgotPasswordEmailForm() {
   const router = useRouter();
@@ -25,7 +25,9 @@ export function ForgotPasswordEmailForm() {
     handleSubmit,
     formState: { errors, isValid },
   } = useForm<EmailAuthFormData>({
-    resolver: zodResolver(emailAuthSchema),
+    resolver: lazyZodResolver<EmailAuthFormData>(
+      () => import("./schemas").then((m) => m.emailAuthSchema)
+    ),
     mode: "onChange",
     defaultValues: { email: "" },
   });

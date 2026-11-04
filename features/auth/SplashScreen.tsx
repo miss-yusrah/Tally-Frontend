@@ -41,7 +41,7 @@ function SplashLogo3D() {
           >
             {isFront ? (
               <Image
-                src="/tabr/brand/logo.png"
+                src="/tabr/brand/logo.webp"
                 alt=""
                 width={84}
                 height={84}

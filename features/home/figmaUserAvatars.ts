@@ -3,10 +3,10 @@
  * Hero stack: 14 → 15 → 18 → 21 → 14
  */
 export const FIGMA_USER_AVATARS = {
-  a14: "/tabr/home/avatars/14.png",
-  a15: "/tabr/home/avatars/15.png",
-  a18: "/tabr/home/avatars/18.png",
-  a21: "/tabr/home/avatars/21.png",
+  a14: "/tabr/home/avatars/14.webp",
+  a15: "/tabr/home/avatars/15.webp",
+  a18: "/tabr/home/avatars/18.webp",
+  a21: "/tabr/home/avatars/21.webp",
 } as const;
 
 /** Rotating pool for overlapping stacks on group cards / hero. */

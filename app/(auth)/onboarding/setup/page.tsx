@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, ChevronDown } from "lucide-react";
 import {
   AuthBody,
@@ -13,9 +12,9 @@ import {
   AuthLogo,
   AuthPrimaryButton,
   AuthScreen,
-  onboardingSchema,
   type OnboardingFormData,
 } from "@/features/auth";
+import { lazyZodResolver } from "@/lib/forms/lazyZodResolver";
 import { authFieldBorder, authFieldClassRounded } from "@/features/auth/authFormStyles";
 import { OnboardingCurrencyPicker } from "@/features/onboarding";
 import { getCurrencyByCode } from "@/lib/currency";
@@ -40,7 +39,9 @@ export default function OnboardingSetupPage() {
     setValue,
     formState: { errors, isValid },
   } = useForm<OnboardingFormData>({
-    resolver: zodResolver(onboardingSchema),
+    resolver: lazyZodResolver<OnboardingFormData>(
+      () => import("@/features/auth/schemas").then((m) => m.onboardingSchema)
+    ),
     mode: "onChange",
     defaultValues: {
       displayName: user?.displayName ?? "",

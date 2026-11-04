@@ -36,7 +36,7 @@ interface LocationDetailsScreenProps {
 
 /**
  * Add-trip flow — location details (full-bleed hero + Create trip).
- * Uses public/tabr/Trip cards/trip location.png (and mocks) until the API lands.
+ * Uses public/tabr/Trip cards/trip location.webp (and mocks) until the API lands.
  */
 export function LocationDetailsScreen({
   groupId,

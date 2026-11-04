@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
 import {
   AuthBody,
@@ -20,7 +19,8 @@ import {
   AuthTerms,
 } from "./AuthScreen";
 import { getPasswordRuleStatus } from "./passwordRules";
-import { signUpSchema, type SignUpFormData } from "./schemas";
+import { type SignUpFormData } from "./schemas";
+import { lazyZodResolver } from "@/lib/forms/lazyZodResolver";
 import { mockSignIn } from "@/lib/auth/mock-session";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store";
@@ -38,7 +38,9 @@ export function SignUpForm() {
     watch,
     formState: { errors, isValid },
   } = useForm<SignUpFormData>({
-    resolver: zodResolver(signUpSchema),
+    resolver: lazyZodResolver<SignUpFormData>(
+      () => import("./schemas").then((m) => m.signUpSchema)
+    ),
     mode: "onChange",
     defaultValues: {
       email: "",
